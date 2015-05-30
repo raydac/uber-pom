@@ -8,7 +8,7 @@
   <packaging>maven-plugin</packaging>
 
   <name>UberPom</name>
-  <description>The Plugin allows to merge pom descriptors in hierarchy and remove sections from result pom.</description>
+  <description>Allows to build a plain uber-pom via merging of whole project pom hierarchy, exclude or change some parameters and inject changed uber-pom into project process.</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
