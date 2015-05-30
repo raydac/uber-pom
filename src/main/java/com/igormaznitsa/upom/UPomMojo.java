@@ -24,6 +24,12 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
 
+/**
+ * Maven plugin to merge pom files in project hierarchy, also allows make
+ * modifications in the result pom.
+ *
+ * @author Igor Maznitsa (http://www.igormaznitsa.com)
+ */
 @Mojo(name = "upom", defaultPhase = LifecyclePhase.VALIDATE, threadSafe = true, requiresDependencyResolution = ResolutionScope.NONE)
 public class UPomMojo extends AbstractMojo {
 
@@ -91,11 +97,11 @@ public class UPomMojo extends AbstractMojo {
   }
 
   public String[] getRemove() {
-    return this.remove;
+    return this.remove == null ? null : this.remove.clone();
   }
 
   public String[] getKeep() {
-    return this.keep;
+    return this.keep == null ? null : this.keep.clone();
   }
 
   private Model[] collectFullHierarchy(final MavenProject project) {
@@ -200,7 +206,7 @@ public class UPomMojo extends AbstractMojo {
         result.append((char) 0x2502);
         result.append(LINE_SEPARATOR);
         spaces(result, insets);
-        result.append((char) 0x2514).append((char)0x2500);
+        result.append((char) 0x2514).append((char) 0x2500);
       }
       result.append(getNameOfModel(fullHierarchy[i]));
       insets += TAB;
@@ -234,18 +240,18 @@ public class UPomMojo extends AbstractMojo {
     return max;
   }
 
-  private static String makeDotString(final int length){
+  private static String makeDotString(final int length) {
     final StringBuilder result = new StringBuilder(length);
-    for(int i=0;i<length;i++){
+    for (int i = 0; i < length; i++) {
       result.append('.');
     }
     return result.toString();
   }
-  
+
   @Override
   public void execute() throws MojoExecutionException {
     String strToPrint = null;
-    
+
     try {
       final Model[] collectFullHierarchy = collectFullHierarchy(this.project);
       final UPomModel[] models = collectModels(this.project, this.depth);
@@ -261,20 +267,20 @@ public class UPomMojo extends AbstractMojo {
       for (int i = 1; i < models.length; i++) {
         final boolean last = i == models.length - 1;
         final UPomModel model = models[i];
-        if (last && this.keep!=null && this.keep.length>0) {
+        if (last && this.keep != null && this.keep.length > 0) {
           getLog().info("");
-          
-          getLog().debug("Freezing state of sections for result project pom:"+Arrays.toString(this.keep));
+
+          getLog().debug("Freezing state of sections for result project pom:" + Arrays.toString(this.keep));
           model.saveState(this.keep);
-          
-          for(final String s : this.keep){
-            getLog().info("Freezing path \'"+s+"\' in the result pom");
+
+          for (final String s : this.keep) {
+            getLog().info("Freezing path \'" + s + "\' in the result pom");
           }
-          
+
           getLog().debug("Merging last model");
           main.merge(model);
 
-          getLog().debug("Restoring state of sections for project pom:"+Arrays.toString(this.keep));
+          getLog().debug("Restoring state of sections for project pom:" + Arrays.toString(this.keep));
           main.restoreStateFrom(model);
         }
         else {
@@ -282,15 +288,15 @@ public class UPomMojo extends AbstractMojo {
           main.merge(model);
         }
       }
-      
+
       getLog().info("");
-      
+
       final String REMOVE_PREFIX = "Remove ";
-      int maxLength = REMOVE_PREFIX.length()+maxLength(this.remove)+12;
-      
+      int maxLength = REMOVE_PREFIX.length() + maxLength(this.remove) + 12;
+
       if (this.remove != null && this.remove.length > 0) {
         for (final String path : this.remove) {
-          final String prefix = REMOVE_PREFIX + '\''+path+'\'';
+          final String prefix = REMOVE_PREFIX + '\'' + path + '\'';
           strToPrint = prefix + makeDotString(maxLength - prefix.length());
           final boolean removed = main.remove(path);
           getLog().info(strToPrint + (removed ? "OK" : "NOT FOUND"));
@@ -301,20 +307,22 @@ public class UPomMojo extends AbstractMojo {
 
       getLog().debug("Saving uber-pom into project");
       final File saveUberPom = saveUberPom(main);
-      
-      getLog().info("Uber-pom saved as '"+saveUberPom.getAbsolutePath()+'\'');
-      
+
+      getLog().info("Uber-pom saved as '" + saveUberPom.getAbsolutePath() + '\'');
+
       getLog().debug("Injecting new uber-pom into project");
       updateProjectForNewPom(main, saveUberPom);
-      
+
       getLog().info("Uber-pom assigned to project");
-    }catch (UPomException ex){
-      if (strToPrint!=null){
-        getLog().info(strToPrint+"ERROR");
+    }
+    catch (UPomException ex) {
+      if (strToPrint != null) {
+        getLog().info(strToPrint + "ERROR");
       }
       getLog().error(ex.getMessage());
       throw new MojoExecutionException("Error during processing", ex);
-    }catch (Exception ex) {
+    }
+    catch (Exception ex) {
       throw new MojoExecutionException("Error during processing", ex);
     }
   }

@@ -26,45 +26,47 @@ import org.apache.maven.model.merge.ModelMerger;
 import org.apache.maven.project.MavenProject;
 
 public final class UPomModel {
-  
+
+  private static final String MAVEN_MODEL_PACKAGE_PREFIX = "org.apache.maven.model.";
+
   private final Model model;
   private final Map<String, Object> savedValues = new HashMap<String, Object>();
-  
+
   public UPomModel(final File modelFile) throws Exception {
     final FileInputStream in = new FileInputStream(modelFile);
     try {
       final MavenXpp3Reader reader = new MavenXpp3Reader();
-      this.model = reader.read(in,true);
+      this.model = reader.read(in, true);
     }
     finally {
       IOUtils.closeQuietly(in);
     }
   }
-  
+
   public UPomModel(final Model pom) {
     this.model = pom.clone();
   }
-  
+
   public String asXML() throws IOException {
     final MavenXpp3Writer mavenWritter = new MavenXpp3Writer();
     final StringWriter buffer = new StringWriter(16384);
     mavenWritter.write(buffer, this.model);
     return buffer.toString();
   }
-  
+
   public void saveState(final String... keepPaths) throws Exception {
     this.savedValues.clear();
     for (final String p : keepPaths) {
       this.savedValues.put(p, this.processPathStepToGet(splitPath(p), 0, this.model));
     }
   }
-  
+
   public void restoreState() throws Exception {
     for (final Map.Entry<String, Object> e : this.savedValues.entrySet()) {
       this.processPathStepToSet(splitPath(e.getKey()), 0, this.model, e.getValue());
     }
   }
-  
+
   public void restoreStateFrom(final UPomModel model) throws Exception {
     for (final Map.Entry<String, Object> e : model.savedValues.entrySet()) {
       this.processPathStepToSet(splitPath(e.getKey()), 0, this.model, e.getValue());
@@ -75,15 +77,16 @@ public final class UPomModel {
     return this.model;
   }
 
-  public void merge(final UPomModel other) throws Exception {
+  public UPomModel merge(final UPomModel other) throws Exception {
     final ModelMerger merger = new ModelMerger();
     merger.merge(this.model, other.model, true, null);
+    return this;
   }
-  
+
   public boolean remove(final String removePath) throws Exception {
     return processPathStepToSet(splitPath(removePath), 0, this.model, null);
   }
-  
+
   private static Method findMethod(final Class<?> klazz, final String methodName, final boolean onlyPublic) {
     Method result = null;
     for (final Method m : klazz.getMethods()) {
@@ -97,21 +100,26 @@ public final class UPomModel {
     }
     return result;
   }
-  
+
   private static Field findDeclaredFieldForName(final Class<?> klazz, final String fieldName) {
     Field result = null;
-    for (final Field m : klazz.getDeclaredFields()) {
-      if (m.getName().equalsIgnoreCase(fieldName)) {
-        result = m;
+    Class<?> curr = klazz;
+    while (curr.getName().startsWith(MAVEN_MODEL_PACKAGE_PREFIX)) {
+      for (final Field m : curr.getDeclaredFields()) {
+        if (m.getName().equalsIgnoreCase(fieldName)) {
+          result = m;
+          break;
+        }
+      }
+      if (result != null) {
+        result.setAccessible(true);
         break;
       }
-    }
-    if (result != null) {
-      result.setAccessible(true);
+      curr = klazz.getSuperclass();
     }
     return result;
   }
-  
+
   private static String makePathStr(final String[] path, final int toIndex) {
     final StringBuilder result = new StringBuilder();
     for (int i = 0; i <= toIndex; i++) {
@@ -122,19 +130,19 @@ public final class UPomModel {
     }
     return result.toString();
   }
-  
+
   private static Collection<?> cloneCollection(final Collection<?> collection) throws Exception {
     final Class collectionClass = collection.getClass();
     final Constructor constructor = collectionClass.getConstructor(Collection.class);
     return (Collection<?>) constructor.newInstance(collection);
   }
-  
+
   private static Map<?, ?> cloneMap(final Map<?, ?> map) throws Exception {
     final Class mapClass = map.getClass();
     final Constructor constructor = mapClass.getConstructor(Map.class);
     return (Map<?, ?>) constructor.newInstance(map);
   }
-  
+
   private static Object ensureCloning(final Object obj) throws Exception {
     if (obj == null) {
       return null;
@@ -157,7 +165,7 @@ public final class UPomModel {
     }
     return result;
   }
-  
+
   private static void setField(final Object instance, final Field field, final Object value) throws Exception {
     final Object currentValue = field.get(instance);
     if (currentValue == null) {
@@ -182,14 +190,18 @@ public final class UPomModel {
       field.set(instance, ensureCloning(value));
     }
   }
-  
+
   private static Object getField(final Object instance, final Field field) throws Exception {
     return ensureCloning(field.get(instance));
   }
-  
+
+  private static boolean isParametersCompatible(final Class<?> fieldClass, final Class<?> valueClass) {
+    return fieldClass.isAssignableFrom(valueClass);
+  }
+
   private boolean processPathStepToSet(final String[] path, final int pathStart, final Object instance, final Object value) throws Exception {
     final String fieldName = path[pathStart];
-    
+
     if (pathStart == path.length - 1) {
       // last step
       // find setter
@@ -197,7 +209,7 @@ public final class UPomModel {
       if (setter == null) {
         throw new UPomException("Can't find model field '" + makePathStr(path, pathStart) + '\'');
       }
-      
+
       final Class<?>[] params = setter.getParameterTypes();
       if (params.length == 0) {
         throw new UPomException("Detected zero setter '" + makePathStr(path, pathStart) + "\'");
@@ -226,15 +238,15 @@ public final class UPomModel {
       if (nextInstance == null) {
         return false;
       }
-      
+
       if (nextInstance instanceof Collection) {
         final Type returnType = getter.getGenericReturnType();
         if (returnType instanceof ParameterizedType) {
           final ParameterizedType paramType = (ParameterizedType) returnType;
           final Type[] argTypes = paramType.getActualTypeArguments();
-          
+
           final boolean itemsAreLastInPath = path.length - 1 == pathStart + 1;
-          
+
           if (itemsAreLastInPath) {
             if (value == null) {
               ((Collection) nextInstance).clear();
@@ -249,11 +261,15 @@ public final class UPomModel {
                 return true;
               }
               else {
-                throw new UPomException("Can't set the value to multiple collection items '" + makePathStr(path, pathStart + 1) + '\'');
+                ((Collection) nextInstance).clear();
+                if (value != null){
+                  ((Collection) nextInstance).add(value);
+                }
+                return true;
               }
             }
           }
-          
+
           final String nextPathItem = path[pathStart + 1].toLowerCase(Locale.ENGLISH);
           if (argTypes[0].getTypeName().toLowerCase(Locale.ENGLISH).endsWith(nextPathItem)) {
             boolean result = false;
@@ -275,10 +291,10 @@ public final class UPomModel {
       }
     }
   }
-  
+
   private Object processPathStepToGet(final String[] path, final int pathStart, final Object instance) throws Exception {
     final String fieldName = path[pathStart];
-    
+
     if (pathStart == path.length - 1) {
       // last step
       // find getter
@@ -286,7 +302,7 @@ public final class UPomModel {
       if (getter == null) {
         throw new UPomException("Can't find model field '" + makePathStr(path, pathStart) + '\'');
       }
-      
+
       final Class<?>[] params = getter.getParameterTypes();
       if (params.length == 0) {
         return ensureCloning(getter.invoke(instance));
@@ -311,24 +327,27 @@ public final class UPomModel {
       if (nextInstance == null) {
         return false;
       }
-      
+
       if (nextInstance instanceof Collection) {
         final Type returnType = getter.getGenericReturnType();
         if (returnType instanceof ParameterizedType) {
           final ParameterizedType paramType = (ParameterizedType) returnType;
           final Type[] argTypes = paramType.getActualTypeArguments();
-          
+
           final boolean itemsAreLastInPath = path.length - 1 == pathStart + 1;
-          
+
           if (itemsAreLastInPath) {
-            return new ArrayList(((Collection) nextInstance));
+            // take only the first value
+            return ((Collection)nextInstance).isEmpty() ? null : ((Collection)nextInstance).iterator().next();
           }
-          
+
           final String nextPathItem = path[pathStart + 1].toLowerCase(Locale.ENGLISH);
           if (argTypes[0].getTypeName().toLowerCase(Locale.ENGLISH).endsWith(nextPathItem)) {
-            final Collection result = new ArrayList();
+            Object result = null;
             for (final Object collectionItem : (Collection) nextInstance) {
-              result.add(processPathStepToGet(path, pathStart + 2, collectionItem));
+              // process only the first value
+              result = processPathStepToGet(path, pathStart + 2, collectionItem);
+              break;
             }
             return result;
           }
@@ -345,12 +364,12 @@ public final class UPomModel {
       }
     }
   }
-  
+
   private static String[] splitPath(final String path) {
     final String[] result = path.trim().split("\\/");
     return result;
   }
-  
+
   public void assignTo(final MavenProject project) {
     project.setOriginalModel(this.model);
   }
