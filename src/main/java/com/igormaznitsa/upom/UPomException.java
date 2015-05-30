@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.igormaznitsa.uberpom;
+package com.igormaznitsa.upom;
 
 public class UPomException extends RuntimeException {
   private static final long serialVersionUID = 4961549799040350155L;

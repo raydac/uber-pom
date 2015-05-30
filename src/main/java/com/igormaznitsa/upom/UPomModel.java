@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.igormaznitsa.uberpom;
+package com.igormaznitsa.upom;
 
 import java.io.*;
 import java.lang.reflect.*;

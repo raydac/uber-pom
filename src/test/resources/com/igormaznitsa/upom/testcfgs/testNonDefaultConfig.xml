@@ -1,6 +1,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  <groupId>com.igormaznitsa</groupId>
+  <artifactId>upom-config-test</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <packaging>jar</packaging>
   <build>
     <plugins>
       <plugin>
@@ -8,6 +12,18 @@
         <artifactId>uber-pom</artifactId>
         <version>1.0.0-SNAPSHOT</version>
         <configuration>
+          <folder>/test/folder</folder>
+          <name>testName.xml</name>
+          <remove>
+            <path>path/path1</path>
+            <path>path1/path2</path>
+          </remove>
+          <keep>
+            <path>keep/keep1</path>
+            <path>keep1/keep2</path>
+          </keep>
+          <deleteOnExit>false</deleteOnExit>
+          <depth>678</depth>
         </configuration>
       </plugin>
     </plugins>
