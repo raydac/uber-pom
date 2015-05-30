@@ -2,9 +2,7 @@ package com.igormaznitsa.upom.logictests;
 
 import com.igormaznitsa.upom.UPomModel;
 import java.io.File;
-import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -69,6 +67,18 @@ public class LogicTest extends AbstractLogicTest {
   }
 
   @Test
+  public void testAsXML() throws Exception {
+    final File base = getFolder("threeLevels");
+
+    final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
+    final String xml = model1.asXML();
+    
+    assertNotNull(xml);
+    assertTrue(xml.length()>100);
+    assertTrue(xml.contains("</project>"));
+  }
+  
+  @Test
   public void testThreeLevel_RemoveEmailOfDevelopers() throws Exception {
     final File base = getFolder("threeLevels");
 
@@ -130,6 +140,8 @@ public class LogicTest extends AbstractLogicTest {
     model1.set("parent/version", "testparent872364");
     assertEquals("testparent872364",model1.get("parent/version"));
     assertEquals("testparent872364",model1.getModel().getParent().getVersion());
+    assertNull(model1.get("url"));
+    assertArrayEquals(new String[]{"modul1","modul2","modul3"}, ((Collection)model1.get("modules")).toArray());
   }
 
   public List<String> geteee(){

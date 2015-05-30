@@ -25,7 +25,7 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.model.merge.ModelMerger;
 import org.apache.maven.project.MavenProject;
 
-@SuppressWarnings({"unchecked","rawtypes"})
+@SuppressWarnings({"unchecked", "rawtypes"})
 public final class UPomModel {
 
   private static final String MAVEN_MODEL_PACKAGE_PREFIX = "org.apache.maven.model.";
@@ -88,14 +88,14 @@ public final class UPomModel {
     return processPathStepToSet(splitPath(removePath), 0, this.model, null);
   }
 
-  public void set(final String path, final String value) throws Exception{
+  public void set(final String path, final String value) throws Exception {
     this.processPathStepToSet(splitPath(path), 0, this.model, value);
   }
-  
-  public Object get(final String path) throws Exception{
+
+  public Object get(final String path) throws Exception {
     return this.processPathStepToGet(splitPath(path), 0, this.model);
   }
-  
+
   private static Method findMethod(final Class klazz, final String methodName, final boolean onlyPublic) {
     Method result = null;
     for (final Method m : klazz.getMethods()) {
@@ -204,10 +204,6 @@ public final class UPomModel {
     return ensureCloning(field.get(instance));
   }
 
-  private static boolean isParametersCompatible(final Class fieldClass, final Class valueClass) {
-    return fieldClass.isAssignableFrom(valueClass);
-  }
-
   private boolean processPathStepToSet(final String[] path, final int pathStart, final Object instance, final Object value) throws Exception {
     final String fieldName = path[pathStart];
 
@@ -271,7 +267,7 @@ public final class UPomModel {
               }
               else {
                 ((Collection) nextInstance).clear();
-                if (value != null){
+                if (value != null) {
                   ((Collection) nextInstance).add(value);
                 }
                 return true;
@@ -347,18 +343,13 @@ public final class UPomModel {
 
           if (itemsAreLastInPath) {
             // take only the first value
-            return ((Collection)nextInstance).isEmpty() ? null : ((Collection)nextInstance).iterator().next();
+            return ((Collection) nextInstance).isEmpty() ? null : ((Collection) nextInstance).iterator().next();
           }
 
           final String nextPathItem = path[pathStart + 1].toLowerCase(Locale.ENGLISH);
           if (argTypes[0].toString().toLowerCase(Locale.ENGLISH).endsWith(nextPathItem)) {
-            Object result = null;
-            for (final Object collectionItem : (Collection) nextInstance) {
-              // process only the first value
-              result = processPathStepToGet(path, pathStart + 2, collectionItem);
-              break;
-            }
-            return result;
+            return ((Collection) nextInstance).isEmpty() ? null
+                    : processPathStepToGet(path, pathStart + 2, ((Collection) nextInstance).iterator().next());
           }
           else {
             throw new UPomException("Collection element type is not '" + makePathStr(path, pathStart + 1) + '\'');
