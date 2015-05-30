@@ -16,6 +16,7 @@ package com.igormaznitsa.upom;
  * limitations under the License.
  */
 import java.io.File;
+import java.util.Properties;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
@@ -54,6 +55,8 @@ public class UPomMojoConfigTest extends AbstractMojoTestCase {
     assertNotNull(myMojo);
 
     assertTrue(myMojo.isDeleteOnExit());
+    assertFalse(myMojo.isEnforce());
+    assertNull(myMojo.getSet());
     assertNull(myMojo.getKeep());
     assertNull(myMojo.getRemove());
     assertNotNull(myMojo.getFolder());
@@ -70,6 +73,13 @@ public class UPomMojoConfigTest extends AbstractMojoTestCase {
     final UPomMojo myMojo = init(pom);
 
     assertFalse(myMojo.isDeleteOnExit());
+    assertTrue(myMojo.isEnforce());
+    
+    final Properties props = myMojo.getSet();
+    assertEquals(2,props.size());
+    assertEquals("value1",props.get("set1"));
+    assertEquals("value2",props.get("set2"));
+    
     assertArrayEquals(new String[]{"keep/keep1", "keep1/keep2"}, myMojo.getKeep());
     assertArrayEquals(new String[]{"path/path1", "path1/path2"}, myMojo.getRemove());
     assertEquals("/test/folder", myMojo.getFolder().getAbsolutePath());

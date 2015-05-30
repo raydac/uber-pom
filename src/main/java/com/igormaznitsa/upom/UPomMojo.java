@@ -68,6 +68,15 @@ public class UPomMojo extends AbstractMojo {
   protected String[] keep;
 
   /**
+   * Enforce filling project parameters by values the generated uber-pom. By
+   * default the uber-pom will be just saved and link to new the file will be
+   * redirected. If the parameter is true then uber-pom model values will be
+   * injected in fields of the current maven project model.
+   */
+  @Parameter(name = "enforce", defaultValue = "false")
+  protected boolean enforce;
+
+  /**
    * Delete generated pom file after session.
    */
   @Parameter(name = "deleteOnExit", defaultValue = "true")
@@ -85,7 +94,7 @@ public class UPomMojo extends AbstractMojo {
    */
   @Parameter(name = "set")
   protected Properties set;
-  
+
   public File getFolder() {
     return this.folder;
   }
@@ -109,8 +118,12 @@ public class UPomMojo extends AbstractMojo {
   public String[] getKeep() {
     return this.keep == null ? null : this.keep.clone();
   }
-  
-  public Properties getSet(){
+
+  public boolean isEnforce() {
+    return this.enforce;
+  }
+
+  public Properties getSet() {
     return this.set;
   }
 
@@ -315,21 +328,22 @@ public class UPomMojo extends AbstractMojo {
       }
       getLog().info("");
 
-      if (this.set!=null && !this.set.isEmpty()){
+      if (this.set != null && !this.set.isEmpty()) {
         strToPrint = null;
-        for(final String key : this.set.stringPropertyNames()){
+        for (final String key : this.set.stringPropertyNames()) {
           final String value = this.set.getProperty(key);
-          try{
-            getLog().info("Set value to path : '"+key+"\'=\'"+value+'\'');
+          try {
+            getLog().info("Set value to path : '" + key + "\'=\'" + value + '\'');
             main.set(key, value);
-          }catch(Exception ex){
+          }
+          catch (Exception ex) {
             getLog().debug(ex);
-            throw new UPomException("Can't set string value to '"+key+'\'');
+            throw new UPomException("Can't set string value to '" + key + '\'');
           }
         }
         getLog().info("");
       }
-      
+
       getLog().debug("Saving uber-pom into project");
       final File saveUberPom = saveUberPom(main);
 
@@ -339,10 +353,15 @@ public class UPomMojo extends AbstractMojo {
       updateProjectForNewPom(main, saveUberPom);
 
       getLog().info("Uber-pom assigned to project");
+
+      if (this.enforce) {
+        getLog().info("Enforce parameters injecting into project variables");
+        main.injectIntoProject(getLog(), this.project);
+      }
     }
     catch (UPomException ex) {
       getLog().debug(ex);
-      
+
       if (strToPrint != null) {
         getLog().info(strToPrint + "ERROR");
       }

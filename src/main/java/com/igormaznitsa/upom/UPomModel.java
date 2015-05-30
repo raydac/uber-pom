@@ -23,6 +23,7 @@ import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.model.merge.ModelMerger;
+import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
@@ -365,6 +366,35 @@ public final class UPomModel {
     }
   }
 
+  public void injectIntoProject(final Log log, final MavenProject project) throws Exception {
+    for(final Method setter : project.getClass().getMethods()){
+      final String methodName = setter.getName();
+      final Class<?> [] setterParams = setter.getParameterTypes();
+      if (setterParams.length == 1 && methodName.startsWith("set")){
+        final String paramName = methodName.substring(3).toLowerCase(Locale.ENGLISH);
+        if (paramName.equals("build")) continue;
+        
+        Method getter = null;
+        for(final Method g : this.model.getClass().getMethods()){
+          final Class<?>[] getterParams = g.getParameterTypes();
+          if (getterParams.length == 0 && g.getName().equalsIgnoreCase("get"+paramName)){
+            getter = g;
+            break;
+          }
+        }
+        if (getter!=null && setterParams[0].isAssignableFrom(getter.getReturnType())){
+          final Object value = getter.invoke(this.model);
+          if (value == null){
+            log.debug(getter.getName()+"() X-> "+setter.getName()+"()");
+          }else{
+            log.debug(getter.getName()+"() --> "+setter.getName()+"()");
+            setter.invoke(project, getter.invoke(this.model));
+          }
+        }
+      }
+    }
+  }
+  
   private static String[] splitPath(final String path) {
     final String[] result = path.trim().split("\\/");
     return result;

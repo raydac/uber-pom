@@ -22,6 +22,17 @@
             <path>keep/keep1</path>
             <path>keep1/keep2</path>
           </keep>
+          <set>
+            <property>
+              <name>set1</name>
+              <value>value1</value>
+            </property>
+            <property>
+              <name>set2</name>
+              <value>value2</value>
+            </property>
+          </set>
+          <enforce>true</enforce>
           <deleteOnExit>false</deleteOnExit>
           <depth>678</depth>
         </configuration>
