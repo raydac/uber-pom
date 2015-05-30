@@ -25,6 +25,7 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.model.merge.ModelMerger;
 import org.apache.maven.project.MavenProject;
 
+@SuppressWarnings({"unchecked","rawtypes"})
 public final class UPomModel {
 
   private static final String MAVEN_MODEL_PACKAGE_PREFIX = "org.apache.maven.model.";
@@ -87,7 +88,15 @@ public final class UPomModel {
     return processPathStepToSet(splitPath(removePath), 0, this.model, null);
   }
 
-  private static Method findMethod(final Class<?> klazz, final String methodName, final boolean onlyPublic) {
+  public void set(final String path, final String value) throws Exception{
+    this.processPathStepToSet(splitPath(path), 0, this.model, value);
+  }
+  
+  public Object get(final String path) throws Exception{
+    return this.processPathStepToGet(splitPath(path), 0, this.model);
+  }
+  
+  private static Method findMethod(final Class klazz, final String methodName, final boolean onlyPublic) {
     Method result = null;
     for (final Method m : klazz.getMethods()) {
       if (onlyPublic && !Modifier.isPublic(m.getModifiers())) {
@@ -101,9 +110,9 @@ public final class UPomModel {
     return result;
   }
 
-  private static Field findDeclaredFieldForName(final Class<?> klazz, final String fieldName) {
+  private static Field findDeclaredFieldForName(final Class klazz, final String fieldName) {
     Field result = null;
-    Class<?> curr = klazz;
+    Class curr = klazz;
     while (curr.getName().startsWith(MAVEN_MODEL_PACKAGE_PREFIX)) {
       for (final Field m : curr.getDeclaredFields()) {
         if (m.getName().equalsIgnoreCase(fieldName)) {
@@ -131,16 +140,16 @@ public final class UPomModel {
     return result.toString();
   }
 
-  private static Collection<?> cloneCollection(final Collection<?> collection) throws Exception {
+  private static Collection cloneCollection(final Collection collection) throws Exception {
     final Class collectionClass = collection.getClass();
     final Constructor constructor = collectionClass.getConstructor(Collection.class);
-    return (Collection<?>) constructor.newInstance(collection);
+    return (Collection) constructor.newInstance(collection);
   }
 
-  private static Map<?, ?> cloneMap(final Map<?, ?> map) throws Exception {
+  private static Map cloneMap(final Map map) throws Exception {
     final Class mapClass = map.getClass();
     final Constructor constructor = mapClass.getConstructor(Map.class);
-    return (Map<?, ?>) constructor.newInstance(map);
+    return (Map) constructor.newInstance(map);
   }
 
   private static Object ensureCloning(final Object obj) throws Exception {
@@ -195,7 +204,7 @@ public final class UPomModel {
     return ensureCloning(field.get(instance));
   }
 
-  private static boolean isParametersCompatible(final Class<?> fieldClass, final Class<?> valueClass) {
+  private static boolean isParametersCompatible(final Class fieldClass, final Class valueClass) {
     return fieldClass.isAssignableFrom(valueClass);
   }
 
@@ -210,12 +219,12 @@ public final class UPomModel {
         throw new UPomException("Can't find model field '" + makePathStr(path, pathStart) + '\'');
       }
 
-      final Class<?>[] params = setter.getParameterTypes();
+      final Class[] params = setter.getParameterTypes();
       if (params.length == 0) {
         throw new UPomException("Detected zero setter '" + makePathStr(path, pathStart) + "\'");
       }
       else if (params.length == 1) {
-        setter.invoke(instance, ensureCloning((Object) value));
+        setter.invoke(instance, ensureCloning(value));
       }
       else {
         final Field field = findDeclaredFieldForName(instance.getClass(), fieldName);
@@ -271,7 +280,7 @@ public final class UPomModel {
           }
 
           final String nextPathItem = path[pathStart + 1].toLowerCase(Locale.ENGLISH);
-          if (argTypes[0].getTypeName().toLowerCase(Locale.ENGLISH).endsWith(nextPathItem)) {
+          if (argTypes[0].toString().toLowerCase(Locale.ENGLISH).endsWith(nextPathItem)) {
             boolean result = false;
             for (final Object collectionItem : (Collection) nextInstance) {
               result |= processPathStepToSet(path, pathStart + 2, collectionItem, value);
@@ -303,7 +312,7 @@ public final class UPomModel {
         throw new UPomException("Can't find model field '" + makePathStr(path, pathStart) + '\'');
       }
 
-      final Class<?>[] params = getter.getParameterTypes();
+      final Class[] params = getter.getParameterTypes();
       if (params.length == 0) {
         return ensureCloning(getter.invoke(instance));
       }
@@ -342,7 +351,7 @@ public final class UPomModel {
           }
 
           final String nextPathItem = path[pathStart + 1].toLowerCase(Locale.ENGLISH);
-          if (argTypes[0].getTypeName().toLowerCase(Locale.ENGLISH).endsWith(nextPathItem)) {
+          if (argTypes[0].toString().toLowerCase(Locale.ENGLISH).endsWith(nextPathItem)) {
             Object result = null;
             for (final Object collectionItem : (Collection) nextInstance) {
               // process only the first value

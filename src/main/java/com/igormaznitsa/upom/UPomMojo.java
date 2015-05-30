@@ -80,6 +80,12 @@ public class UPomMojo extends AbstractMojo {
   @Parameter(name = "depth", defaultValue = "-1")
   protected int depth;
 
+  /**
+   * String properties to be set in the result pom.
+   */
+  @Parameter(name = "set")
+  protected Properties set;
+  
   public File getFolder() {
     return this.folder;
   }
@@ -102,6 +108,10 @@ public class UPomMojo extends AbstractMojo {
 
   public String[] getKeep() {
     return this.keep == null ? null : this.keep.clone();
+  }
+  
+  public Properties getSet(){
+    return this.set;
   }
 
   private Model[] collectFullHierarchy(final MavenProject project) {
@@ -305,6 +315,21 @@ public class UPomMojo extends AbstractMojo {
       }
       getLog().info("");
 
+      if (this.set!=null && !this.set.isEmpty()){
+        strToPrint = null;
+        for(final String key : this.set.stringPropertyNames()){
+          final String value = this.set.getProperty(key);
+          try{
+            getLog().info("Set value to path : '"+key+"\'=\'"+value+'\'');
+            main.set(key, value);
+          }catch(Exception ex){
+            getLog().debug(ex);
+            throw new UPomException("Can't set string value to '"+key+'\'');
+          }
+        }
+        getLog().info("");
+      }
+      
       getLog().debug("Saving uber-pom into project");
       final File saveUberPom = saveUberPom(main);
 
@@ -316,6 +341,8 @@ public class UPomMojo extends AbstractMojo {
       getLog().info("Uber-pom assigned to project");
     }
     catch (UPomException ex) {
+      getLog().debug(ex);
+      
       if (strToPrint != null) {
         getLog().info(strToPrint + "ERROR");
       }

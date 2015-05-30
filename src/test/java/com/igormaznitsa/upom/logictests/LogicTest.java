@@ -2,6 +2,9 @@ package com.igormaznitsa.upom.logictests;
 
 import com.igormaznitsa.upom.UPomModel;
 import java.io.File;
+import java.lang.reflect.*;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -118,4 +121,19 @@ public class LogicTest extends AbstractLogicTest {
     assertEquals("1.0.0", result.getModel().getDependencies().get(0).getVersion());
     assertEquals("test", result.getModel().getDependencies().get(0).getScope());
   }
+
+  @Test
+  public void testPath_SetGet() throws Exception {
+    final File base = getFolder("threeLevels");
+
+    final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
+    model1.set("parent/version", "testparent872364");
+    assertEquals("testparent872364",model1.get("parent/version"));
+    assertEquals("testparent872364",model1.getModel().getParent().getVersion());
+  }
+
+  public List<String> geteee(){
+    return new ArrayList<String>();
+  }
+  
 }
