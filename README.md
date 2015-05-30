@@ -1,0 +1,2 @@
+# Introduction
+Sometime I develop and publish maven plugins and it is very comfortable way to organize maven plugin project as hierarchy of the plugin and its testing modules, in the case all modules have the link to the parent pom. The Issue was that I didn't need to publish the main project poms in central to keep plugins working, so I developed the maven plugin which allows to resolcve the situationg through creation of uber-pom for a module and packing the pom into the result archive without any links to parent modules. 
