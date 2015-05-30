@@ -21,7 +21,7 @@
     <url>https://github.com/raydac/uber-pom/issues</url>
   </issueManagement>
 
-  <inceptionYear>2014</inceptionYear>
+  <inceptionYear>2015</inceptionYear>
 
   <developers>
     <developer>
@@ -31,7 +31,6 @@
       <url>http://www.igormaznitsa.com</url>
       <timezone>+3</timezone>
       <roles>
-        <role>architect</role>
         <role>developer</role>
       </roles>
     </developer>
