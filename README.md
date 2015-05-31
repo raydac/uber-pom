@@ -37,3 +37,41 @@ Just add the plugin into pom.xml of the project which needs uber-pom
   </build>
 ```
 __NB! By default the plugin just merging pom models in hierarchy, so you should add `<remove>` section to remove the 'parent' and 'modules' from the result uber-pom. I don't make that automaticaly to keep universality.__
+## I want to remove some sections in the result
+Just add list of paths to the sections into `<configuration><remove>` and the sections will be removed from the result. 
+```
+  <configuration>
+    <remove>
+      <section>developers</section>
+      <section>build/plugins</section>
+      <section>developers/developer/email</section>
+    </remove>
+  </configuration>
+```
+## I want keep some sections unchanged!
+Add paths to such sections into `<configuration><keep>`
+```
+  <configuration>
+    <keep>
+      <section>developers</section>
+      <section>description</section>
+    </keep>
+  </configuration>
+```
+The Sections in the result will be the same as in the original project pom.xml.
+## How to change value of some pom parameters?
+Sometime it is good to change some record in the pom.xml, the plugin allows to do that
+```
+<configuration>
+ <set>
+    <property>
+      <name>description</name>
+      <value>It is new description of the pom.xml</value>
+    </property>
+    <property>
+      <name>developers/developer/email</name>
+      <value>newemail@alldevelopers.com</value>
+    </property>
+  </set>
+</configuration>
+```
