@@ -17,7 +17,7 @@ Just add the plugin into pom.xml of the project which needs uber-pom
       <plugin>
         <groupId>com.igormaznitsa</groupId>
         <artifactId>uber-pom</artifactId>
-        <version>1.0.0-SNAPSHOT</version>
+        <version>1.0.0</version>
         <configuration>
           <remove>
             <section>parent</section>
