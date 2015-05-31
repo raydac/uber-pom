@@ -245,15 +245,14 @@ public final class UPomModel {
         return false;
       }
 
+      final boolean theNextPathItemIsLastOne = path.length - 1 == pathStart + 1;
       if (nextInstance instanceof Collection) {
         final Type returnType = getter.getGenericReturnType();
         if (returnType instanceof ParameterizedType) {
           final ParameterizedType paramType = (ParameterizedType) returnType;
           final Type[] argTypes = paramType.getActualTypeArguments();
 
-          final boolean itemsAreLastInPath = path.length - 1 == pathStart + 1;
-
-          if (itemsAreLastInPath) {
+          if (theNextPathItemIsLastOne) {
             if (value == null) {
               ((Collection) nextInstance).clear();
               return true;
@@ -268,10 +267,7 @@ public final class UPomModel {
               }
               else {
                 ((Collection) nextInstance).clear();
-                if (value != null) {
-                  ((Collection) nextInstance).add(value);
-                }
-                return true;
+                return ((Collection) nextInstance).add(value);
               }
             }
           }
@@ -290,6 +286,22 @@ public final class UPomModel {
         }
         else {
           throw new UPomException("Can't find model field '" + makePathStr(path, pathStart) + '\'');
+        }
+      }
+      else if (nextInstance instanceof Map) {
+        final Map map = (Map) nextInstance;
+        final String nextPathItem = path[pathStart + 1];
+        if (theNextPathItemIsLastOne) {
+          if (value == null) {
+            map.remove(nextPathItem);
+          }
+          else {
+            map.put(nextPathItem, value);
+          }
+          return true;
+        }
+        else {
+          return map.containsKey(nextPathItem) ? processPathStepToSet(path, pathStart + 2, map.get(nextPathItem), value) : false;
         }
       }
       else {
@@ -334,15 +346,15 @@ public final class UPomModel {
         return false;
       }
 
+      final boolean theNextPathItemIsLastOne = path.length - 1 == pathStart + 1;
+
       if (nextInstance instanceof Collection) {
         final Type returnType = getter.getGenericReturnType();
         if (returnType instanceof ParameterizedType) {
           final ParameterizedType paramType = (ParameterizedType) returnType;
           final Type[] argTypes = paramType.getActualTypeArguments();
 
-          final boolean itemsAreLastInPath = path.length - 1 == pathStart + 1;
-
-          if (itemsAreLastInPath) {
+          if (theNextPathItemIsLastOne) {
             // take only the first value
             return ((Collection) nextInstance).isEmpty() ? null : ((Collection) nextInstance).iterator().next();
           }
@@ -360,6 +372,16 @@ public final class UPomModel {
           throw new UPomException("Can't find model field '" + makePathStr(path, pathStart) + '\'');
         }
       }
+      else if (nextInstance instanceof Map) {
+        final Map map = (Map) nextInstance;
+        final String nextPathItem = path[pathStart + 1];
+        if (theNextPathItemIsLastOne) {
+          return map.get(nextPathItem);
+        }
+        else {
+          return map.containsKey(nextPathItem) ? processPathStepToGet(path, pathStart + 2, map.get(nextPathItem)) : null;
+        }
+      }
       else {
         return processPathStepToGet(path, pathStart + 1, nextInstance);
       }
@@ -367,34 +389,37 @@ public final class UPomModel {
   }
 
   public void injectIntoProject(final Log log, final MavenProject project) throws Exception {
-    for(final Method setter : project.getClass().getMethods()){
+    for (final Method setter : project.getClass().getMethods()) {
       final String methodName = setter.getName();
-      final Class<?> [] setterParams = setter.getParameterTypes();
-      if (setterParams.length == 1 && methodName.startsWith("set")){
+      final Class<?>[] setterParams = setter.getParameterTypes();
+      if (setterParams.length == 1 && methodName.startsWith("set")) {
         final String paramName = methodName.substring(3).toLowerCase(Locale.ENGLISH);
-        if (paramName.equals("build")) continue;
-        
+        if (paramName.equals("build")) {
+          continue;
+        }
+
         Method getter = null;
-        for(final Method g : this.model.getClass().getMethods()){
+        for (final Method g : this.model.getClass().getMethods()) {
           final Class<?>[] getterParams = g.getParameterTypes();
-          if (getterParams.length == 0 && g.getName().equalsIgnoreCase("get"+paramName)){
+          if (getterParams.length == 0 && g.getName().equalsIgnoreCase("get" + paramName)) {
             getter = g;
             break;
           }
         }
-        if (getter!=null && setterParams[0].isAssignableFrom(getter.getReturnType())){
+        if (getter != null && setterParams[0].isAssignableFrom(getter.getReturnType())) {
           final Object value = getter.invoke(this.model);
-          if (value == null){
-            log.debug(getter.getName()+"() X-> "+setter.getName()+"()");
-          }else{
-            log.debug(getter.getName()+"() --> "+setter.getName()+"()");
+          if (value == null) {
+            log.debug(getter.getName() + "() X-> " + setter.getName() + "()");
+          }
+          else {
+            log.debug(getter.getName() + "() --> " + setter.getName() + "()");
             setter.invoke(project, getter.invoke(this.model));
           }
         }
       }
     }
   }
-  
+
   private static String[] splitPath(final String path) {
     final String[] result = path.trim().split("\\/");
     return result;

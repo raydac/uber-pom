@@ -160,7 +160,7 @@ public class UPomMojo extends AbstractMojo {
     final File uberPomFile = new File(this.folder, this.name);
     FileUtils.write(uberPomFile, model.asXML(), "UTF-8");
     if (this.deleteOnExit) {
-      getLog().info("The Result file marked to be removed after JVM session");
+      getLog().info("NB! The Result uber-pom file marked to be removed after JVM session");
       uberPomFile.deleteOnExit();
     }
     return uberPomFile;
@@ -226,10 +226,10 @@ public class UPomMojo extends AbstractMojo {
       if (result.length() > 0) {
         result.append(LINE_SEPARATOR);
         spaces(result, insets);
-        result.append((char) 0x2502);
+        result.append((char) 0x2506);
         result.append(LINE_SEPARATOR);
         spaces(result, insets);
-        result.append((char) 0x2514).append((char) 0x2500);
+        result.append((char) 0x2570).append((char) 0x2504);
       }
       result.append(getNameOfModel(fullHierarchy[i]));
       insets += TAB;
@@ -239,10 +239,10 @@ public class UPomMojo extends AbstractMojo {
       if (result.length() > 0) {
         result.append(LINE_SEPARATOR);
         spaces(result, insets);
-        result.append((char) 0x2551);
+        result.append((char) 0x2503);
         result.append(LINE_SEPARATOR);
         spaces(result, insets);
-        result.append((char) 0x255A).append((char) 0x2550);
+        result.append((char) 0x2517).append((char) 0x2501);
       }
       result.append(getNameOfModel(processedHierarchy[i].getModel()));
       insets += TAB;
