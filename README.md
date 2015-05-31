@@ -23,6 +23,14 @@ Just add the plugin into pom.xml of the project which needs uber-pom
             <section>parent</section>
             <section>modules</section>
           </remove>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>upom</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     ...
     </plugins>
