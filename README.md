@@ -6,3 +6,26 @@ The Plugin just merging all pom.xml in hierarchy (or only defined depth of the h
 
 # May be there is official solution?
 May be yes, I have found [pre-released maven-flatten](http://mojo.codehaus.org/flatten-maven-plugin/) which may be doing the same business but I prefer my own solutions.
+
+# How to use?
+## Add the plugin in pom.xml
+Just add the plugin into pom.xml of the project which needs uber-pom
+```
+  <build>
+    <plugins>
+    ...
+      <plugin>
+        <groupId>com.igormaznitsa</groupId>
+        <artifactId>uber-pom</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <configuration>
+          <remove>
+            <section>parent</section>
+            <section>modules</section>
+          </remove>
+      </plugin>
+    ...
+    </plugins>
+  </build>
+```
+__NB! By default the plugin just merging pom models in hierarchy, so you should add `<remove>` section to remove the 'parent' and 'modules' from the result uber-pom. I don't make that automaticaly to keep universality.__
