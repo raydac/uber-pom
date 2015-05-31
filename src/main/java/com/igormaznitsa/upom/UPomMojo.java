@@ -25,7 +25,7 @@ import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
 
 /**
- * Maven plugin to merge pom files in project hierarchy, also allows make
+ * Maven plugin to merge pom files in project hierarchy, also it can make
  * modifications in the result pom.
  *
  * @author Igor Maznitsa (http://www.igormaznitsa.com)
@@ -178,28 +178,28 @@ public class UPomMojo extends AbstractMojo {
     final StringBuilder result = new StringBuilder();
 
     if (group == null) {
-      result.append("<inherited>");
+      result.append("[inherited]");
     }
     else {
       result.append(group);
     }
     result.append(':');
     if (artifact == null) {
-      result.append("<inherited>");
+      result.append("[inherited]");
     }
     else {
       result.append(artifact);
     }
     result.append(':');
     if (name == null) {
-      result.append("<inherited>");
+      result.append("[inherited]");
     }
     else {
       result.append(name);
     }
     result.append(':');
     if (version == null) {
-      result.append("<inherited>");
+      result.append("[inherited]");
     }
     else {
       result.append(version);
@@ -250,7 +250,7 @@ public class UPomMojo extends AbstractMojo {
     return result.toString();
   }
 
-  private static int maxLength(final String[] strs) {
+  private static int getMaxStrLength(final String[] strs) {
     if (strs == null || strs.length == 0) {
       return 0;
     }
@@ -276,20 +276,23 @@ public class UPomMojo extends AbstractMojo {
     String strToPrint = null;
 
     try {
-      final Model[] collectFullHierarchy = collectFullHierarchy(this.project);
-      final UPomModel[] models = collectModels(this.project, this.depth);
+      final Model[] fullModuleHierarchy = collectFullHierarchy(this.project);
+      final UPomModel[] modelsForProcessing = collectModels(this.project, this.depth);
+
+      getLog().debug("Full hierarchy: " + Arrays.toString(fullModuleHierarchy));
+      getLog().debug("Models to be processed: " + Arrays.toString(modelsForProcessing));
 
       getLog().info(".........................................................");
-      for (final String s : drawHierarchy(collectFullHierarchy, models).split("\\n")) {
+      for (final String s : drawHierarchy(fullModuleHierarchy, modelsForProcessing).split("\\n")) {
         getLog().info(s);
       }
       getLog().info(".........................................................");
 
-      final UPomModel main = models[0];
+      final UPomModel main = modelsForProcessing[0];
 
-      for (int i = 1; i < models.length; i++) {
-        final boolean last = i == models.length - 1;
-        final UPomModel model = models[i];
+      for (int i = 1; i < modelsForProcessing.length; i++) {
+        final boolean last = i == modelsForProcessing.length - 1;
+        final UPomModel model = modelsForProcessing[i];
         if (last && this.keep != null && this.keep.length > 0) {
           getLog().info("");
 
@@ -315,7 +318,7 @@ public class UPomMojo extends AbstractMojo {
       getLog().info("");
 
       final String REMOVE_PREFIX = "Remove ";
-      int maxLength = REMOVE_PREFIX.length() + maxLength(this.remove) + 12;
+      int maxLength = REMOVE_PREFIX.length() + getMaxStrLength(this.remove) + 12;
 
       if (this.remove != null && this.remove.length > 0) {
         for (final String path : this.remove) {
@@ -323,7 +326,6 @@ public class UPomMojo extends AbstractMojo {
           strToPrint = prefix + makeDotString(maxLength - prefix.length());
           final boolean removed = main.remove(path);
           getLog().info(strToPrint + (removed ? "OK" : "NOT FOUND"));
-          strToPrint = null;
         }
       }
       getLog().info("");

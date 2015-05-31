@@ -429,4 +429,9 @@ public final class UPomModel {
     project.setOriginalModel(this.model);
   }
 
+  @Override
+  public String toString(){
+    return this.model.toString();
+  }
+  
 }
