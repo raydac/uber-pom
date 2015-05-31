@@ -55,7 +55,7 @@ public class UPomMojoConfigTest extends AbstractMojoTestCase {
     assertNotNull(myMojo);
 
     assertTrue(myMojo.isDeleteOnExit());
-    assertFalse(myMojo.isEnforce());
+    assertFalse(myMojo.isEnforceInjecting());
     assertNull(myMojo.getSet());
     assertNull(myMojo.getKeep());
     assertNull(myMojo.getRemove());
@@ -73,7 +73,7 @@ public class UPomMojoConfigTest extends AbstractMojoTestCase {
     final UPomMojo myMojo = init(pom);
 
     assertFalse(myMojo.isDeleteOnExit());
-    assertTrue(myMojo.isEnforce());
+    assertTrue(myMojo.isEnforceInjecting());
     
     final Properties props = myMojo.getSet();
     assertEquals(2,props.size());

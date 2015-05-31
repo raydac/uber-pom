@@ -1,5 +1,6 @@
 package com.igormaznitsa.upom.logictests;
 
+import com.igormaznitsa.upom.UPomException;
 import com.igormaznitsa.upom.UPomModel;
 import java.io.File;
 import java.util.*;
@@ -30,6 +31,8 @@ public class LogicTest extends AbstractLogicTest {
     assertNull(result.getModel().getScm());
     assertNull(result.getModel().getReporting());
     assertEquals(0,result.getModel().getRepositories().size());
+    
+    assertEquals(3,result.getModel().getProperties().size());
   }
 
   @Test
@@ -144,8 +147,78 @@ public class LogicTest extends AbstractLogicTest {
     assertArrayEquals(new String[]{"modul1","modul2","modul3"}, ((Collection)model1.get("modules")).toArray());
   }
 
-  public List<String> geteee(){
-    return new ArrayList<String>();
+  @Test
+  public void testPath_GetFromCollection() throws Exception {
+    final File base = getFolder("threeLevels");
+
+    final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
+    assertEquals("modul1",model1.get("modules/module"));
   }
-  
+
+  @Test
+  public void testPath_GetFrom_PrerequisitesMaven() throws Exception {
+    final File base = getFolder("threeLevels");
+
+    final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
+    assertEquals("3.0.5",model1.get("prerequisites/maven"));
+  }
+
+  @Test
+  public void testPath_GetFrom_Property() throws Exception {
+    final File base = getFolder("threeLevels");
+    final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
+    assertEquals(null,model1.get("properties/property.number000"));
+    assertEquals("Hello",model1.get("properties/property.number1"));
+  }
+
+  @Test
+  public void testPath_SetTo_Property() throws Exception {
+    final File base = getFolder("threeLevels");
+    final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
+    assertEquals(null,model1.get("properties/property.number000"));
+    model1.set("properties/property.number000", "HAHAHA");
+    assertEquals("HAHAHA",model1.get("properties/property.number000"));
+  }
+
+  @Test
+  public void testPath_SetTo_PrerequisitesMaven() throws Exception {
+    final File base = getFolder("threeLevels");
+
+    final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
+    model1.set("prerequisites/maven","1.2.3");
+    assertEquals("1.2.3",model1.get("prerequisites/maven"));
+  }
+
+  @Test(expected = UPomException.class)
+  public void testSet_WrongPathOnStart() throws Exception {
+    final File base = getFolder("threeLevels");
+
+    final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
+    model1.set("pardent/version", "testparent872364");
+  }
+
+  @Test(expected = UPomException.class)
+  public void testSet_WrongPathAtEnd() throws Exception {
+    final File base = getFolder("threeLevels");
+
+    final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
+    model1.set("parent/verbsion", "testparent872364");
+  }
+
+  @Test(expected = UPomException.class)
+  public void testGet_WrongPathOnStart() throws Exception {
+    final File base = getFolder("threeLevels");
+
+    final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
+    model1.get("pardent/version");
+  }
+
+  @Test(expected = UPomException.class)
+  public void testGet_WrongPathAtEnd() throws Exception {
+    final File base = getFolder("threeLevels");
+
+    final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
+    model1.get("parent/verbsion");
+  }
+
 }

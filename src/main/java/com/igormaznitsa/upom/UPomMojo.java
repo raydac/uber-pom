@@ -73,8 +73,8 @@ public class UPomMojo extends AbstractMojo {
    * redirected. If the parameter is true then uber-pom model values will be
    * injected in fields of the current maven project model.
    */
-  @Parameter(name = "enforce", defaultValue = "false")
-  protected boolean enforce;
+  @Parameter(name = "enforceInjecting", defaultValue = "false")
+  protected boolean enforceInjecting;
 
   /**
    * Delete generated pom file after session.
@@ -119,8 +119,8 @@ public class UPomMojo extends AbstractMojo {
     return this.keep == null ? null : this.keep.clone();
   }
 
-  public boolean isEnforce() {
-    return this.enforce;
+  public boolean isEnforceInjecting() {
+    return this.enforceInjecting;
   }
 
   public Properties getSet() {
@@ -354,8 +354,8 @@ public class UPomMojo extends AbstractMojo {
 
       getLog().info("Uber-pom assigned to project");
 
-      if (this.enforce) {
-        getLog().info("Enforce parameters injecting into project variables");
+      if (this.enforceInjecting) {
+        getLog().info("NB! Injecting generated uber-pom parameters into inside project fields!");
         main.injectIntoProject(getLog(), this.project);
       }
     }

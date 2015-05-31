@@ -32,7 +32,7 @@
               <value>value2</value>
             </property>
           </set>
-          <enforce>true</enforce>
+          <enforceInjecting>true</enforceInjecting>
           <deleteOnExit>false</deleteOnExit>
           <depth>678</depth>
         </configuration>

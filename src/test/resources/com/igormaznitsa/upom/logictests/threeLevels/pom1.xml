@@ -16,6 +16,19 @@
     <version>1.0.0</version>
   </parent>
   
+  <organization>
+    <name>TestInc</name>
+    <url>http://www,test.com</url>
+  </organization>
+
+  <prerequisites>
+    <maven>3.0.5</maven>
+  </prerequisites>
+  
+  <properties>
+    <property.number1>Hello</property.number1>
+  </properties>
+  
   <modules>
     <module>modul1</module>
     <module>modul2</module>

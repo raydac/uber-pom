@@ -21,7 +21,11 @@
     <module>modul5</module>
     <module>modul6</module>
   </modules>
-  
+
+  <properties>
+    <property.number2>World</property.number2>
+  </properties>
+      
   <developers>
     <developer>
       <id>developer2</id>

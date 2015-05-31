@@ -30,6 +30,10 @@
     </developer>
   </developers>
 
+  <properties>
+    <property.number3>Ugums</property.number3>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.test</groupId>
