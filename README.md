@@ -75,3 +75,32 @@ Sometime it is good to change some record in the pom.xml, the plugin allows to d
   </set>
 </configuration>
 ```
+## How to save uber-pom in another place?
+The Generated uber-pom by default will be placed in the same folder where the project pom is. You can change that through `<folder>` setting.
+```
+<configuration>
+  <folder>/anotherFolderToSaveUberPom</folder>
+</configuration>
+```
+## I wanna change the result uber-pom name
+By default the uber-pom has name `uber-pom.xml` but sometime it is needed to be changed, it is possible through `<name>` setting.
+```
+<configuration>
+  <name>customUberPom.xml</name>
+</configuration>
+```
+## I can't find uber-pom after session
+By default the generated and saved uber-pom will be removed after session. If you want to keep the file then disable its deleting with flag `<deleteOnExit>`
+```
+<configuration>
+  <deleteOnExit>false</deleteOnExit>
+</configuration>
+```
+## How to merge only restricted number of hierarchy levels?
+By default the plugin merges all hierarchy levels, but you can restrict the number through the `<depth>` parameter
+```
+<configuration>
+  <depth>2</depth>
+</configuration>
+```
+In the example, only two upper levels will be involved into merging.
