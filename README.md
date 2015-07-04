@@ -104,3 +104,7 @@ By default the plugin merges all hierarchy levels, but you can restrict the numb
 </configuration>
 ```
 In the example, only two upper levels will be involved into merging.
+
+# Donation   
+If you like the software you can make some donation to the author   
+[![https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=AHWJHJFBAWGL2)
