@@ -77,11 +77,12 @@ public class UPomMojo extends AbstractMojo {
   protected boolean enforceInjecting;
 
   /**
-   * Delete generated pom file after session.
+   * Delete generated pom file after session. Also can be replaced externally through system
+   * property 'upom.delete.on.exit' which has bigger priority
    */
-  @Parameter(name = "deleteOnExit", defaultValue = "true")
+  @Parameter(name = "deleteOnExit",  defaultValue = "true")
   protected boolean deleteOnExit;
-
+  
   /**
    * Number of levels in hierarchy to merge, If less than zero then whole
    * hierarchy will be merged.
@@ -104,7 +105,14 @@ public class UPomMojo extends AbstractMojo {
   }
 
   public boolean isDeleteOnExit() {
-    return this.deleteOnExit;
+    final String systemProperty = System.getProperty("upom.delete.on.exit",null);
+    final boolean result;
+    if (systemProperty!=null && !systemProperty.trim().isEmpty()){
+      result = Boolean.parseBoolean(systemProperty);
+    }else{
+      result = this.deleteOnExit;
+    }
+    return result;
   }
 
   public int getDepth() {
@@ -159,7 +167,7 @@ public class UPomMojo extends AbstractMojo {
   private File saveUberPom(final UPomModel model) throws Exception {
     final File uberPomFile = new File(this.folder, this.name);
     FileUtils.write(uberPomFile, model.asXML(), "UTF-8");
-    if (this.deleteOnExit) {
+    if (isDeleteOnExit()) {
       getLog().info("NB! The Result uber-pom file marked to be removed after JVM session");
       uberPomFile.deleteOnExit();
     }

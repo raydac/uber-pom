@@ -20,8 +20,11 @@ import java.util.Properties;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
-import org.apache.maven.project.*;
+import org.apache.maven.project.MavenProject;
+import org.apache.maven.project.ProjectBuilder;
+import org.apache.maven.project.ProjectBuildingRequest;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.Test;
 
 public class UPomMojoConfigTest extends AbstractMojoTestCase {
@@ -33,6 +36,11 @@ public class UPomMojoConfigTest extends AbstractMojoTestCase {
     final MavenProject project = projectBuilder.build(config, buildingRequest).getProject();
     final UPomMojo mojo = (UPomMojo) this.lookupConfiguredMojo(project, "upom");
     return mojo;
+  }
+  
+  @Before
+  public void before(){
+    System.clearProperty("upom.delete.on.exit");
   }
   
   @Override
@@ -86,6 +94,31 @@ public class UPomMojoConfigTest extends AbstractMojoTestCase {
     assertEquals("testName.xml", myMojo.getName());
     assertEquals(678, myMojo.getDepth());
 
+  }
+
+  @Test
+  public void testNonDefaultConfig_ReplacedDeleteOnExitBySystemProperty() throws Exception {
+    final File pom = getTestFile("src/test/resources/com/igormaznitsa/upom/testcfgs/testNonDefaultConfig.xml");
+    assertNotNull(pom);
+    assertTrue(pom.exists());
+
+    System.setProperty("upom.delete.on.exit", "true");
+
+    final UPomMojo myMojo = init(pom);
+
+    assertTrue(myMojo.isDeleteOnExit());
+    assertTrue(myMojo.isEnforceInjecting());
+    
+    final Properties props = myMojo.getSet();
+    assertEquals(2,props.size());
+    assertEquals("value1",props.get("set1"));
+    assertEquals("value2",props.get("set2"));
+    
+    assertArrayEquals(new String[]{"keep/keep1", "keep1/keep2"}, myMojo.getKeep());
+    assertArrayEquals(new String[]{"path/path1", "path1/path2"}, myMojo.getRemove());
+    assertEquals("/test/folder", myMojo.getFolder().getAbsolutePath());
+    assertEquals("testName.xml", myMojo.getName());
+    assertEquals(678, myMojo.getDepth());
   }
 
 }
