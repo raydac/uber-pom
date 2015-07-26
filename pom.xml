@@ -8,7 +8,7 @@
   <packaging>maven-plugin</packaging>
 
   <name>UberPom</name>
-  <description>Merging all pom models in hierarchy to get uber-pom.</description>
+  <description>Merging all pom parameters in hierarchy to get uber-pom for child modules.</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
