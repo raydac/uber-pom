@@ -3,14 +3,14 @@ Sometime I develop and publish maven plugins in maven central. The Most comforta
 
 # Changelog
 __1.0.1__
- - added flag `removeSiblingDuplications` to find sibling duplications in the result uber pom XML and removing them. By default it is turned off.
- - added support for system property 'upom.delete.on.exit' to override value of 'deleteOnExit' parameter (issue #2)
+ - issue #3, added flag `removeSiblingDuplications` to find sibling duplications in the result uber pom XML and removing them. By default it is turned off.
+ - issue #2, added support for system property 'upom.delete.on.exit' to override value of 'deleteOnExit' parameter
 
 __1.0__
  - Initial version
 
 # How it works?
-The Plugin just merging all pom.xml in hierarchy (or only defined depth of the hierarchy) and saves the generated uber-pom into defined place, then it saves link to the file into the current maven project model. It works on the VALIDATE phase. So the result packed artifact will have the uber-pom packed into the result archive.
+The Plugin just merging all pom.xml in project module hierarchy (or only defined depth of the hierarchy) and saves the generated uber-pom into defined place, then it saves link to the file into the current maven project model. It works on the VALIDATE phase. So the result packed artifact will have the uber-pom packed into the result archive.
 
 # May be there is official solution?
 May be yes, I have found [pre-released maven-flatten](http://mojo.codehaus.org/flatten-maven-plugin/) which may be doing the same business but I prefer my own solutions.
