@@ -4,11 +4,11 @@
 
   <groupId>com.igormaznitsa</groupId>
   <artifactId>uber-pom</artifactId>
-  <version>1.0.1-SNAPSHOT</version>
+  <version>1.0.1</version>
   <packaging>maven-plugin</packaging>
 
   <name>UberPom</name>
-  <description>Merging all pom parameters in hierarchy to get uber-pom for child modules.</description>
+  <description>Merging all pom parameters in hierarchy to get the solid uber-pom for a child module.</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
