@@ -16,6 +16,18 @@
     <version>1.0.0</version>
   </parent>
   
+  <profiles>
+    <profile>
+      <id>profile1</id>
+      <modules>
+        <module>onemodul1</module>
+        <module>onemodul2</module>
+        <module>onemodul3</module>
+      </modules>
+    </profile>
+  </profiles>
+  
+  
   <modules>
     <module>modul7</module>
     <module>modul8</module>

@@ -70,6 +70,7 @@ public class UPomMojoConfigTest extends AbstractMojoTestCase {
     assertNotNull(myMojo.getFolder());
     assertEquals("uber-pom.xml", myMojo.getName());
     assertEquals(-1, myMojo.getDepth());
+    assertFalse(myMojo.isRemoveSiblingDuplications());
   }
 
   @Test
@@ -93,7 +94,7 @@ public class UPomMojoConfigTest extends AbstractMojoTestCase {
     assertEquals("/test/folder", myMojo.getFolder().getAbsolutePath());
     assertEquals("testName.xml", myMojo.getName());
     assertEquals(678, myMojo.getDepth());
-
+    assertTrue(myMojo.isRemoveSiblingDuplications());
   }
 
   @Test

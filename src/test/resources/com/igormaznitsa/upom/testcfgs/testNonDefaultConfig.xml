@@ -32,6 +32,7 @@
               <value>value2</value>
             </property>
           </set>
+          <removeSiblingDuplications>true</removeSiblingDuplications>
           <enforceInjecting>true</enforceInjecting>
           <deleteOnExit>false</deleteOnExit>
           <depth>678</depth>

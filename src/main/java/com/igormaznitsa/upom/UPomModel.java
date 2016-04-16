@@ -18,6 +18,12 @@ package com.igormaznitsa.upom;
 import java.io.*;
 import java.lang.reflect.*;
 import java.util.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.io.IOUtils;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
@@ -25,6 +31,9 @@ import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.apache.maven.model.merge.ModelMerger;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.project.MavenProject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.InputSource;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public final class UPomModel {
@@ -39,8 +48,7 @@ public final class UPomModel {
     try {
       final MavenXpp3Reader reader = new MavenXpp3Reader();
       this.model = reader.read(in, true);
-    }
-    finally {
+    } finally {
       IOUtils.closeQuietly(in);
     }
   }
@@ -49,11 +57,108 @@ public final class UPomModel {
     this.model = pom.clone();
   }
 
-  public String asXML() throws IOException {
+  private static Node findFirstElement(final Node node) {
+    if (node == null) {
+      return null;
+    }
+    Node result = node.getFirstChild();
+    while (result != null && result.getNodeType() != Node.ELEMENT_NODE) {
+      result = result.getNextSibling();
+    }
+    return result;
+  }
+
+  private static Node nextSiblingElement(final Node node) {
+    if (node == null) {
+      return null;
+    }
+    Node next = node.getNextSibling();
+    while (next != null && next.getNodeType() != Node.ELEMENT_NODE) {
+      next = next.getNextSibling();
+    }
+    return next;
+  }
+
+  private static void insideElementJanitor(final Log log, final Node node, final List<String> path) {
+    path.add(node.getNodeName());
+    Node element = findFirstElement(node);
+    while (element != null) {
+      duplicatedSiblingJanitor(log, element, path);
+      element = nextSiblingElement(element);
+    }
+    path.remove(path.size() - 1);
+  }
+
+  private static String pathToString(final List<String> path) {
+    final StringBuilder result = new StringBuilder();
+    for (final String s : path) {
+      if (result.length() > 0) {
+        result.append('/');
+      }
+      result.append(s);
+    }
+    return result.toString();
+  }
+
+  private static void duplicatedSiblingJanitor(final Log log, final Node node, final List<String> path) {
+    if (node == null) {
+      return;
+    }
+
+    insideElementJanitor(log, node, path);
+    Node sibling = nextSiblingElement(node);
+    while (sibling != null) {
+      insideElementJanitor(log, sibling, path);
+      sibling = nextSiblingElement(sibling);
+    }
+
+    sibling = nextSiblingElement(node);
+    while (sibling != null) {
+      if (node.isEqualNode(sibling)) {
+        path.add(node.getNodeName());
+        final Node deleting = sibling;
+        sibling = nextSiblingElement(sibling);
+        if (log != null) {
+          log.warn("Removing duplicated element : " + pathToString(path));
+        }
+        deleting.getParentNode().removeChild(deleting);
+        path.remove(path.size() - 1);
+      } else {
+        sibling = nextSiblingElement(sibling);
+      }
+    }
+  }
+
+  private static String findAndRemoveDuplicatedSiblings(final Log log, final String xmlText) throws Exception {
+    final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    final DocumentBuilder builder = factory.newDocumentBuilder();
+    final Document xmldoc = builder.parse(new InputSource(new StringReader(xmlText)));
+
+    insideElementJanitor(log, xmldoc, new ArrayList<String>());
+
+    final TransformerFactory tFactory = TransformerFactory.newInstance();
+    final Transformer transformer = tFactory.newTransformer();
+    final DOMSource source = new DOMSource(xmldoc);
+    final StringWriter buffer = new StringWriter(xmlText.length());
+    final StreamResult result = new StreamResult(buffer);
+    transformer.transform(source, result);
+    return ((StringWriter) result.getWriter()).toString();
+  }
+
+  public String asXML(final Log log, final boolean removeDuplicatedSiblings) throws Exception {
     final MavenXpp3Writer mavenWritter = new MavenXpp3Writer();
     final StringWriter buffer = new StringWriter(16384);
     mavenWritter.write(buffer, this.model);
-    return buffer.toString();
+    String result = buffer.toString();
+    if (removeDuplicatedSiblings) {
+      if (log != null) {
+        log.warn("Activated search and removing of duplicated sibling elements!");
+      }
+      result = findAndRemoveDuplicatedSiblings(log, result);
+    } else if (log != null) {
+      log.info("Search and removing of duplicated sibling elements is OFF");
+    }
+    return result;
   }
 
   public void saveState(final String... keepPaths) throws Exception {
@@ -162,15 +267,12 @@ public final class UPomModel {
     if (clone == null) {
       if (obj instanceof Map) {
         result = cloneMap((Map) obj);
-      }
-      else if (obj instanceof Collection) {
+      } else if (obj instanceof Collection) {
         result = cloneCollection((Collection) obj);
-      }
-      else {
+      } else {
         result = obj;
       }
-    }
-    else {
+    } else {
       result = clone.invoke(obj);
     }
     return result;
@@ -183,20 +285,17 @@ public final class UPomModel {
         field.setAccessible(true);
         field.set(instance, value);
       }
-    }
-    else if (currentValue instanceof Map) {
+    } else if (currentValue instanceof Map) {
       ((Map) currentValue).clear();
       if (value != null) {
         ((Map) currentValue).putAll((Map) value);
       }
-    }
-    else if (currentValue instanceof Collection) {
+    } else if (currentValue instanceof Collection) {
       ((Collection) currentValue).clear();
       if (value != null) {
         ((Collection) currentValue).addAll((Collection) value);
       }
-    }
-    else {
+    } else {
       field.set(instance, ensureCloning(value));
     }
   }
@@ -219,22 +318,18 @@ public final class UPomModel {
       final Class[] params = setter.getParameterTypes();
       if (params.length == 0) {
         throw new UPomException("Detected zero setter '" + makePathStr(path, pathStart) + "\'");
-      }
-      else if (params.length == 1) {
+      } else if (params.length == 1) {
         setter.invoke(instance, ensureCloning(value));
-      }
-      else {
+      } else {
         final Field field = findDeclaredFieldForName(instance.getClass(), fieldName);
         if (field != null) {
           setField(instance, field, value);
-        }
-        else {
+        } else {
           throw new UPomException("Unsupported type for '" + makePathStr(path, pathStart) + "\'");
         }
       }
       return true;
-    }
-    else {
+    } else {
       // find getter
       final Method getter = findMethod(instance.getClass(), "get" + fieldName, true);
       if (getter == null) {
@@ -256,19 +351,15 @@ public final class UPomModel {
             if (value == null) {
               ((Collection) nextInstance).clear();
               return true;
-            }
-            else {
-              if (value instanceof Collection) {
-                ((Collection) nextInstance).clear();
-                for (final Object obj : ((Collection) value)) {
-                  ((Collection) nextInstance).add(obj);
-                }
-                return true;
+            } else if (value instanceof Collection) {
+              ((Collection) nextInstance).clear();
+              for (final Object obj : ((Collection) value)) {
+                ((Collection) nextInstance).add(obj);
               }
-              else {
-                ((Collection) nextInstance).clear();
-                return ((Collection) nextInstance).add(value);
-              }
+              return true;
+            } else {
+              ((Collection) nextInstance).clear();
+              return ((Collection) nextInstance).add(value);
             }
           }
 
@@ -279,32 +370,26 @@ public final class UPomModel {
               result |= processPathStepToSet(path, pathStart + 2, collectionItem, value);
             }
             return result;
-          }
-          else {
+          } else {
             throw new UPomException("Collection element type is not '" + makePathStr(path, pathStart + 1) + '\'');
           }
-        }
-        else {
+        } else {
           throw new UPomException("Can't find model field '" + makePathStr(path, pathStart) + '\'');
         }
-      }
-      else if (nextInstance instanceof Map) {
+      } else if (nextInstance instanceof Map) {
         final Map map = (Map) nextInstance;
         final String nextPathItem = path[pathStart + 1];
         if (theNextPathItemIsLastOne) {
           if (value == null) {
             map.remove(nextPathItem);
-          }
-          else {
+          } else {
             map.put(nextPathItem, value);
           }
           return true;
-        }
-        else {
+        } else {
           return map.containsKey(nextPathItem) ? processPathStepToSet(path, pathStart + 2, map.get(nextPathItem), value) : false;
         }
-      }
-      else {
+      } else {
         return processPathStepToSet(path, pathStart + 1, nextInstance, value);
       }
     }
@@ -324,18 +409,15 @@ public final class UPomModel {
       final Class[] params = getter.getParameterTypes();
       if (params.length == 0) {
         return ensureCloning(getter.invoke(instance));
-      }
-      else {
+      } else {
         final Field field = findDeclaredFieldForName(instance.getClass(), fieldName);
         if (field != null) {
           return getField(instance, field);
-        }
-        else {
+        } else {
           throw new UPomException("Unsupported type for '" + makePathStr(path, pathStart) + "\'");
         }
       }
-    }
-    else {
+    } else {
       // find getter
       final Method getter = findMethod(instance.getClass(), "get" + fieldName, true);
       if (getter == null) {
@@ -362,27 +444,22 @@ public final class UPomModel {
           final String nextPathItem = path[pathStart + 1].toLowerCase(Locale.ENGLISH);
           if (argTypes[0].toString().toLowerCase(Locale.ENGLISH).endsWith(nextPathItem)) {
             return ((Collection) nextInstance).isEmpty() ? null
-                    : processPathStepToGet(path, pathStart + 2, ((Collection) nextInstance).iterator().next());
-          }
-          else {
+                : processPathStepToGet(path, pathStart + 2, ((Collection) nextInstance).iterator().next());
+          } else {
             throw new UPomException("Collection element type is not '" + makePathStr(path, pathStart + 1) + '\'');
           }
-        }
-        else {
+        } else {
           throw new UPomException("Can't find model field '" + makePathStr(path, pathStart) + '\'');
         }
-      }
-      else if (nextInstance instanceof Map) {
+      } else if (nextInstance instanceof Map) {
         final Map map = (Map) nextInstance;
         final String nextPathItem = path[pathStart + 1];
         if (theNextPathItemIsLastOne) {
           return map.get(nextPathItem);
-        }
-        else {
+        } else {
           return map.containsKey(nextPathItem) ? processPathStepToGet(path, pathStart + 2, map.get(nextPathItem)) : null;
         }
-      }
-      else {
+      } else {
         return processPathStepToGet(path, pathStart + 1, nextInstance);
       }
     }
@@ -410,8 +487,7 @@ public final class UPomModel {
           final Object value = getter.invoke(this.model);
           if (value == null) {
             log.debug(getter.getName() + "() X-> " + setter.getName() + "()");
-          }
-          else {
+          } else {
             log.debug(getter.getName() + "() --> " + setter.getName() + "()");
             setter.invoke(project, getter.invoke(this.model));
           }
@@ -430,8 +506,8 @@ public final class UPomModel {
   }
 
   @Override
-  public String toString(){
+  public String toString() {
     return this.model.toString();
   }
-  
+
 }

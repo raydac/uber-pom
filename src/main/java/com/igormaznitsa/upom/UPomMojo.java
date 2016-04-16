@@ -25,8 +25,7 @@ import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
 
 /**
- * Maven plugin to merge pom files in project hierarchy, also it can make
- * modifications in the result pom.
+ * Maven plugin to merge pom files in project hierarchy, also it can make modifications in the result pom.
  *
  * @author Igor Maznitsa (http://www.igormaznitsa.com)
  */
@@ -48,44 +47,45 @@ public class UPomMojo extends AbstractMojo {
   protected File folder;
 
   /**
+   * Turn on checking of result XML for duplicated sibling elements and remove all them.
+   * @since 1.0.1
+   */
+  @Parameter(name="removeSiblingDuplications", defaultValue = "false")
+  protected boolean removeSiblingDuplications;
+  
+  /**
    * The Name of the uber-pom file.
    */
   @Parameter(name = "name", defaultValue = "uber-pom.xml")
   protected String name;
 
   /**
-   * List of paths to be removed from the result pom file. Example of a path:
-   * "build/plugins"
+   * List of paths to be removed from the result pom file. Example of a path: "build/plugins"
    */
   @Parameter(name = "remove")
   protected String[] remove;
 
   /**
-   * List of sections to not be modified in the result. Example of a path:
-   * "build/plugins"
+   * List of sections to not be modified in the result. Example of a path: "build/plugins"
    */
   @Parameter(name = "keep")
   protected String[] keep;
 
   /**
-   * Enforce filling project parameters by values the generated uber-pom. By
-   * default the uber-pom will be just saved and link to new the file will be
-   * redirected. If the parameter is true then uber-pom model values will be
-   * injected in fields of the current maven project model.
+   * Enforce filling project parameters by values the generated uber-pom. By default the uber-pom will be just saved and link to new the file will be redirected. If the parameter
+   * is true then uber-pom model values will be injected in fields of the current maven project model.
    */
   @Parameter(name = "enforceInjecting", defaultValue = "false")
   protected boolean enforceInjecting;
 
   /**
-   * Delete generated pom file after session. Also can be replaced externally through system
-   * property 'upom.delete.on.exit' which has bigger priority
+   * Delete generated pom file after session. Also can be replaced externally through system property 'upom.delete.on.exit' which has bigger priority
    */
-  @Parameter(name = "deleteOnExit",  defaultValue = "true")
+  @Parameter(name = "deleteOnExit", defaultValue = "true")
   protected boolean deleteOnExit;
-  
+
   /**
-   * Number of levels in hierarchy to merge, If less than zero then whole
-   * hierarchy will be merged.
+   * Number of levels in hierarchy to merge, If less than zero then whole hierarchy will be merged.
    */
   @Parameter(name = "depth", defaultValue = "-1")
   protected int depth;
@@ -104,12 +104,16 @@ public class UPomMojo extends AbstractMojo {
     return this.name;
   }
 
+  public boolean isRemoveSiblingDuplications(){
+    return this.removeSiblingDuplications;
+  }
+  
   public boolean isDeleteOnExit() {
-    final String systemProperty = System.getProperty("upom.delete.on.exit",null);
+    final String systemProperty = System.getProperty("upom.delete.on.exit", null);
     final boolean result;
-    if (systemProperty!=null && !systemProperty.trim().isEmpty()){
+    if (systemProperty != null && !systemProperty.trim().isEmpty()) {
       result = Boolean.parseBoolean(systemProperty);
-    }else{
+    } else {
       result = this.deleteOnExit;
     }
     return result;
@@ -166,7 +170,7 @@ public class UPomMojo extends AbstractMojo {
 
   private File saveUberPom(final UPomModel model) throws Exception {
     final File uberPomFile = new File(this.folder, this.name);
-    FileUtils.write(uberPomFile, model.asXML(), "UTF-8");
+    FileUtils.write(uberPomFile, model.asXML(getLog(),isRemoveSiblingDuplications()), "UTF-8");
     if (isDeleteOnExit()) {
       getLog().info("NB! The Result uber-pom file marked to be removed after JVM session");
       uberPomFile.deleteOnExit();
@@ -187,29 +191,25 @@ public class UPomMojo extends AbstractMojo {
 
     if (group == null) {
       result.append("[inherited]");
-    }
-    else {
+    } else {
       result.append(group);
     }
     result.append(':');
     if (artifact == null) {
       result.append("[inherited]");
-    }
-    else {
+    } else {
       result.append(artifact);
     }
     result.append(':');
     if (name == null) {
       result.append("[inherited]");
-    }
-    else {
+    } else {
       result.append(name);
     }
     result.append(':');
     if (version == null) {
       result.append("[inherited]");
-    }
-    else {
+    } else {
       result.append(version);
     }
 
@@ -316,8 +316,7 @@ public class UPomMojo extends AbstractMojo {
 
           getLog().debug("Restoring state of sections for project pom:" + Arrays.toString(this.keep));
           main.restoreStateFrom(model);
-        }
-        else {
+        } else {
           getLog().debug("Merging model");
           main.merge(model);
         }
@@ -345,8 +344,7 @@ public class UPomMojo extends AbstractMojo {
           try {
             getLog().info("Set value to path : '" + key + "\'=\'" + value + '\'');
             main.set(key, value);
-          }
-          catch (Exception ex) {
+          } catch (Exception ex) {
             getLog().debug(ex);
             throw new UPomException("Can't set string value to '" + key + '\'');
           }
@@ -368,8 +366,7 @@ public class UPomMojo extends AbstractMojo {
         getLog().info("NB! Injecting generated uber-pom parameters into inside project fields!");
         main.injectIntoProject(getLog(), this.project);
       }
-    }
-    catch (UPomException ex) {
+    } catch (UPomException ex) {
       getLog().debug(ex);
 
       if (strToPrint != null) {
@@ -377,8 +374,7 @@ public class UPomMojo extends AbstractMojo {
       }
       getLog().error(ex.getMessage());
       throw new MojoExecutionException("Error during processing", ex);
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
       throw new MojoExecutionException("Error during processing", ex);
     }
   }

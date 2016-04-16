@@ -18,6 +18,9 @@ public class LogicTest extends AbstractLogicTest {
     
     final UPomModel result = model1.merge(model2).merge(model3);
 
+    assertEquals(1,result.getModel().getLicenses().size());
+    assertEquals(1,result.getModel().getProfiles().size());
+    
     assertEquals(4,result.getModel().getDependencies().size());
     assertEquals(3,result.getModel().getDevelopers().size());
     assertEquals(9,result.getModel().getModules().size());
@@ -74,7 +77,7 @@ public class LogicTest extends AbstractLogicTest {
     final File base = getFolder("threeLevels");
 
     final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
-    final String xml = model1.asXML();
+    final String xml = model1.asXML(null,false);
     
     assertNotNull(xml);
     assertTrue(xml.length()>100);
