@@ -2,7 +2,10 @@
 Sometime I develop and publish maven plugins in maven central. The Most comfortable way to organize maven plugin testing is to make a pom module hierarchy because maven keeps module build in defined order, also it allows to share common options between modules. But in the case there is some issue, all child modules have link to their parent and the parent must be published also together with children. So I developed the uber-pom plugin to make some around way.
 
 # Changelog
-__1.0.1__
+__1.0.2-SNAPSHOT (in development)__
+ - 
+
+__1.0.1 (17-apr-2016)__
  - issue #3, added flag `removeSiblingDuplications` to find sibling duplications in the result uber pom XML and removing them. By default it is turned off.
  - issue #2, added support for system property 'upom.delete.on.exit' to override value of 'deleteOnExit' parameter
 
