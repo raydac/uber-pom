@@ -25,6 +25,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import org.apache.commons.io.IOUtils;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
@@ -55,6 +56,30 @@ public final class UPomModel {
 
   public UPomModel(final Model pom) {
     this.model = pom.clone();
+  }
+
+  public List<Dependency> removeDependencies(final List<DependencyPattern> patterns) {
+    final List<Dependency> kept = new ArrayList<Dependency>();
+    final List<Dependency> removed = new ArrayList<Dependency>();
+
+    for (final Dependency d : this.model.getDependencies()) {
+      boolean remove = false;
+      for (final DependencyPattern p : patterns) {
+        if (p.maths(d)) {
+          remove = true;
+          break;
+        }
+      }
+      if (remove) {
+        removed.add(d);
+      } else {
+        kept.add(d);
+      }
+    }
+
+    this.model.setDependencies(kept);
+
+    return removed;
   }
 
   private static Node findFirstElement(final Node node) {
@@ -444,7 +469,7 @@ public final class UPomModel {
           final String nextPathItem = path[pathStart + 1].toLowerCase(Locale.ENGLISH);
           if (argTypes[0].toString().toLowerCase(Locale.ENGLISH).endsWith(nextPathItem)) {
             return ((Collection) nextInstance).isEmpty() ? null
-                : processPathStepToGet(path, pathStart + 2, ((Collection) nextInstance).iterator().next());
+                    : processPathStepToGet(path, pathStart + 2, ((Collection) nextInstance).iterator().next());
           } else {
             throw new UPomException("Collection element type is not '" + makePathStr(path, pathStart + 1) + '\'');
           }

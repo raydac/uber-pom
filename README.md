@@ -1,6 +1,6 @@
 [![License Apache 2.0](https://img.shields.io/badge/license-Apache%20License%202.0-green.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Java 6.0+](https://img.shields.io/badge/java-6.0%2b-green.svg)](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-[![Maven central](https://maven-badges.herokuapp.com/maven-central/com.igormaznitsa/uber-pom/badge.svg)](http://search.maven.org/#artifactdetails|com.igormaznitsa|uber-pom|1.0.1|jar)
+[![Maven central](https://maven-badges.herokuapp.com/maven-central/com.igormaznitsa/uber-pom/badge.svg)](http://search.maven.org/#artifactdetails|com.igormaznitsa|uber-pom|1.0.2|jar)
 [![Maven 3.0.3+](https://img.shields.io/badge/maven-3.0.3%2b-green.svg)](https://maven.apache.org/)
 [![PayPal donation](https://img.shields.io/badge/donation-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=AHWJHJFBAWGL2)
 
@@ -8,8 +8,8 @@
 Sometime I develop and publish maven plugins in maven central. The Most comfortable way to organize maven plugin testing is to make a pom module hierarchy because maven keeps module build in defined order, also it allows to share common options between modules. But in the case there is some issue, all child modules have link to their parent and the parent must be published also together with children. So I developed the uber-pom plugin to make some around way.
 
 # Changelog
-__1.0.2-SNAPSHOT (in development)__
- - 
+__1.0.2 (04-apr-2019)__
+ - added `removeDependencies` with wildcard support
 
 __1.0.1 (17-apr-2016)__
  - issue #3, added flag `removeSiblingDuplications` to find sibling duplications in the result uber pom XML and removing them. By default it is turned off.
@@ -34,7 +34,7 @@ Just add the plugin into pom.xml of the project which needs uber-pom
       <plugin>
         <groupId>com.igormaznitsa</groupId>
         <artifactId>uber-pom</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2</version>
         <configuration>
           <remove>
             <section>parent</section>
@@ -42,6 +42,12 @@ Just add the plugin into pom.xml of the project which needs uber-pom
             <section>profiles/profile/modules</section>
           </remove>
           <removeSiblingDuplications>true</removeSiblingDuplications>
+          <removeDependencies>
+            <dependency>
+              <scope>test</scope>
+              <systemPath>*</systemPath>
+            </dependency>
+          </removeDependencies>
         </configuration>
         <executions>
           <execution>

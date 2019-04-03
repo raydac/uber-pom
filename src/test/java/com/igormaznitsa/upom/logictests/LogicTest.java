@@ -1,9 +1,11 @@
 package com.igormaznitsa.upom.logictests;
 
+import com.igormaznitsa.upom.DependencyPattern;
 import com.igormaznitsa.upom.UPomException;
 import com.igormaznitsa.upom.UPomModel;
 import java.io.File;
 import java.util.*;
+import org.apache.maven.model.Dependency;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -21,7 +23,7 @@ public class LogicTest extends AbstractLogicTest {
     assertEquals(1,result.getModel().getLicenses().size());
     assertEquals(1,result.getModel().getProfiles().size());
     
-    assertEquals(4,result.getModel().getDependencies().size());
+    assertEquals(7,result.getModel().getDependencies().size());
     assertEquals(3,result.getModel().getDevelopers().size());
     assertEquals(9,result.getModel().getModules().size());
     
@@ -39,6 +41,48 @@ public class LogicTest extends AbstractLogicTest {
   }
 
   @Test
+  public void testThreeLevel_RemoveDependenciesForPattern() throws Exception {
+    final File base = getFolder("threeLevels");
+
+    final UPomModel model1 = new UPomModel(new File(base, "pom1.xml"));
+    final UPomModel model2 = new UPomModel(new File(base, "pom2.xml"));
+    final UPomModel model3 = new UPomModel(new File(base, "pom3.xml"));
+
+    final UPomModel result = model1.merge(model2).merge(model3);
+    
+    int normalDependencies = 0;
+    int systemPathDependencies = 0;
+    
+    for(final Dependency d : result.getModel().getDependencies()) {
+      if (d.getSystemPath()!=null) systemPathDependencies++;
+      else normalDependencies++;
+    }
+    
+    assertEquals(4, normalDependencies);
+    assertEquals(3, systemPathDependencies);
+    
+    final DependencyPattern dependencyPattern = new DependencyPattern();
+    dependencyPattern.setSystemPath("*");
+    
+    assertEquals(3, result.removeDependencies(Collections.singletonList(dependencyPattern)).size());
+  
+    int normalDependencies2 = 0;
+    int systemPathDependencies2 = 0;
+
+    for (final Dependency d : result.getModel().getDependencies()) {
+      if (d.getSystemPath() != null) {
+        systemPathDependencies2++;
+      } else {
+        normalDependencies2++;
+      }
+    }
+
+    assertEquals(normalDependencies, normalDependencies2);
+    assertEquals(0, systemPathDependencies2);
+
+  }
+  
+  @Test
   public void testThreeLevel_SaveAndRestoreState() throws Exception {
     final File base = getFolder("threeLevels");
     
@@ -50,7 +94,7 @@ public class LogicTest extends AbstractLogicTest {
     final UPomModel result = model1.merge(model2).merge(model3);
     model1.restoreState();
     
-    assertEquals(2,result.getModel().getDependencies().size());
+    assertEquals(3,result.getModel().getDependencies().size());
     assertEquals("artifact1",result.getModel().getDependencies().get(0).getArtifactId());
     assertEquals("artifact2",result.getModel().getDependencies().get(1).getArtifactId());
     

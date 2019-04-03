@@ -40,6 +40,12 @@
       <artifactId>artifact2</artifactId>
       <version>1.0.0</version>
     </dependency>
+    <dependency>
+      <groupId>com.test.system</groupId>
+      <artifactId>artifact2</artifactId>
+      <version>1.0.1</version>
+      <systemPath>some/system/path2</systemPath>
+    </dependency>
   </dependencies>
 
 </project>

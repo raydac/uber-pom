@@ -18,6 +18,7 @@ package com.igormaznitsa.upom;
 import java.io.File;
 import java.util.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -25,7 +26,8 @@ import org.apache.maven.plugins.annotations.*;
 import org.apache.maven.project.MavenProject;
 
 /**
- * Maven plugin to merge pom files in project hierarchy, also it can make modifications in the result pom.
+ * Maven plugin to merge pom files in project hierarchy, also it can make
+ * modifications in the result pom.
  *
  * @author Igor Maznitsa (http://www.igormaznitsa.com)
  */
@@ -47,12 +49,14 @@ public class UPomMojo extends AbstractMojo {
   protected File folder;
 
   /**
-   * Turn on checking of result XML for duplicated sibling elements and remove all them.
+   * Turn on checking of result XML for duplicated sibling elements and remove
+   * all them.
+   *
    * @since 1.0.1
    */
-  @Parameter(name="removeSiblingDuplications", defaultValue = "false")
+  @Parameter(name = "removeSiblingDuplications", defaultValue = "false")
   protected boolean removeSiblingDuplications;
-  
+
   /**
    * The Name of the uber-pom file.
    */
@@ -60,32 +64,47 @@ public class UPomMojo extends AbstractMojo {
   protected String name;
 
   /**
-   * List of paths to be removed from the result pom file. Example of a path: "build/plugins"
+   * List of paths to be removed from the result pom file. Example of a path:
+   * "build/plugins"
    */
   @Parameter(name = "remove")
   protected String[] remove;
 
   /**
-   * List of sections to not be modified in the result. Example of a path: "build/plugins"
+   * List of sections to not be modified in the result. Example of a path:
+   * "build/plugins"
    */
   @Parameter(name = "keep")
   protected String[] keep;
 
   /**
-   * Enforce filling project parameters by values the generated uber-pom. By default the uber-pom will be just saved and link to new the file will be redirected. If the parameter
-   * is true then uber-pom model values will be injected in fields of the current maven project model.
+   * Enforce filling project parameters by values the generated uber-pom. By
+   * default the uber-pom will be just saved and link to new the file will be
+   * redirected. If the parameter is true then uber-pom model values will be
+   * injected in fields of the current maven project model.
    */
   @Parameter(name = "enforceInjecting", defaultValue = "false")
   protected boolean enforceInjecting;
 
   /**
-   * Delete generated pom file after session. Also can be replaced externally through system property 'upom.delete.on.exit' which has bigger priority
+   * Delete generated pom file after session. Also can be replaced externally
+   * through system property 'upom.delete.on.exit' which has bigger priority
    */
   @Parameter(name = "deleteOnExit", defaultValue = "true")
   protected boolean deleteOnExit;
 
   /**
-   * Number of levels in hierarchy to merge, If less than zero then whole hierarchy will be merged.
+   * List of dependency patterns to be removed. Wildcards ('*' and '?') are
+   * supported. Patterns can be provided for all dependency qualifiers.
+   *
+   * @since 1.0.2
+   */
+  @Parameter(name = "removeDependencies")
+  protected List<DependencyPattern> removeDependencies = new ArrayList<DependencyPattern>();
+
+  /**
+   * Number of levels in hierarchy to merge, If less than zero then whole
+   * hierarchy will be merged.
    */
   @Parameter(name = "depth", defaultValue = "-1")
   protected int depth;
@@ -96,6 +115,10 @@ public class UPomMojo extends AbstractMojo {
   @Parameter(name = "set")
   protected Properties set;
 
+  public List<DependencyPattern> getRemoveDependencies() {
+    return this.removeDependencies;
+  }
+
   public File getFolder() {
     return this.folder;
   }
@@ -104,10 +127,10 @@ public class UPomMojo extends AbstractMojo {
     return this.name;
   }
 
-  public boolean isRemoveSiblingDuplications(){
+  public boolean isRemoveSiblingDuplications() {
     return this.removeSiblingDuplications;
   }
-  
+
   public boolean isDeleteOnExit() {
     final String systemProperty = System.getProperty("upom.delete.on.exit", null);
     final boolean result;
@@ -170,7 +193,7 @@ public class UPomMojo extends AbstractMojo {
 
   private File saveUberPom(final UPomModel model) throws Exception {
     final File uberPomFile = new File(this.folder, this.name);
-    FileUtils.write(uberPomFile, model.asXML(getLog(),isRemoveSiblingDuplications()), "UTF-8");
+    FileUtils.write(uberPomFile, model.asXML(getLog(), isRemoveSiblingDuplications()), "UTF-8");
     if (isDeleteOnExit()) {
       getLog().info("NB! The Result uber-pom file marked to be removed after JVM session");
       uberPomFile.deleteOnExit();
@@ -279,6 +302,21 @@ public class UPomMojo extends AbstractMojo {
     return result.toString();
   }
 
+  private static String dependency2str(final Dependency dependency) {
+    final StringBuilder result = new StringBuilder();
+
+    result.append("groupId=").append(dependency.getGroupId()).append(',')
+            .append("artifactId=").append(dependency.getArtifactId()).append(',')
+            .append("version=").append(dependency.getVersion()).append(',')
+            .append("type=").append(dependency.getType()).append(',')
+            .append("scope=").append(dependency.getScope()).append(',')
+            .append("systemPath=").append(dependency.getSystemPath()).append(',')
+            .append("classifier=").append(dependency.getClassifier()).append(',')
+            .append("optional=").append(dependency.getOptional());
+
+    return result.toString();
+  }
+
   @Override
   public void execute() throws MojoExecutionException {
     String strToPrint = null;
@@ -350,6 +388,14 @@ public class UPomMojo extends AbstractMojo {
           }
         }
         getLog().info("");
+      }
+
+      final List<Dependency> removedDependencies = main.removeDependencies(this.removeDependencies);
+
+      if (!removedDependencies.isEmpty()) {
+        for (final Dependency d : removedDependencies) {
+          getLog().info("Removed dependency: " + dependency2str(d));
+        }
       }
 
       getLog().debug("Saving uber-pom into project");
