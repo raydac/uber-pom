@@ -37,7 +37,10 @@ public class LogicTest extends AbstractLogicTest {
     assertNull(result.getModel().getReporting());
     assertEquals(0,result.getModel().getRepositories().size());
     
-    assertEquals(3,result.getModel().getProperties().size());
+    final Properties properties = result.getModel().getProperties();
+    assertTrue(properties.containsKey("property.number1"));
+    assertTrue(properties.containsKey("property.number2"));
+    assertTrue(properties.containsKey("property.number3"));
   }
 
   @Test

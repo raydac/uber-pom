@@ -31,7 +31,7 @@ import org.apache.maven.project.MavenProject;
  *
  * @author Igor Maznitsa (http://www.igormaznitsa.com)
  */
-@Mojo(name = "upom", defaultPhase = LifecyclePhase.VALIDATE, threadSafe = true, requiresDependencyResolution = ResolutionScope.NONE)
+@Mojo(name = "upom", defaultPhase = LifecyclePhase.INITIALIZE, threadSafe = true, requiresDependencyResolution = ResolutionScope.NONE)
 public class UPomMojo extends AbstractMojo {
 
   public static final String LINE_SEPARATOR = System.getProperty("line.separator", "/r/n");
@@ -47,7 +47,7 @@ public class UPomMojo extends AbstractMojo {
    */
   @Parameter(name = "folder", defaultValue = "${basedir}")
   protected File folder;
-
+  
   /**
    * Turn on checking of result XML for duplicated sibling elements and remove
    * all them.
@@ -90,7 +90,7 @@ public class UPomMojo extends AbstractMojo {
    * Delete generated pom file after session. Also can be replaced externally
    * through system property 'upom.delete.on.exit' which has bigger priority
    */
-  @Parameter(name = "deleteOnExit", defaultValue = "true")
+  @Parameter(name = "deleteOnExit", property = "upom.delete.on.exit", defaultValue = "true")
   protected boolean deleteOnExit;
 
   /**
@@ -132,14 +132,7 @@ public class UPomMojo extends AbstractMojo {
   }
 
   public boolean isDeleteOnExit() {
-    final String systemProperty = System.getProperty("upom.delete.on.exit", null);
-    final boolean result;
-    if (systemProperty != null && !systemProperty.trim().isEmpty()) {
-      result = Boolean.parseBoolean(systemProperty);
-    } else {
-      result = this.deleteOnExit;
-    }
-    return result;
+    return this.deleteOnExit;
   }
 
   public int getDepth() {
@@ -405,11 +398,11 @@ public class UPomMojo extends AbstractMojo {
 
       getLog().debug("Injecting new uber-pom into project");
       updateProjectForNewPom(main, saveUberPom);
-
+      
       getLog().info("Uber-pom assigned to project");
 
       if (this.enforceInjecting) {
-        getLog().info("NB! Injecting generated uber-pom parameters into inside project fields!");
+        getLog().info("NB! Injecting generated uber-pom parameters into internal project fields!");
         main.injectIntoProject(getLog(), this.project);
       }
     } catch (UPomException ex) {
@@ -424,4 +417,21 @@ public class UPomMojo extends AbstractMojo {
       throw new MojoExecutionException("Error during processing", ex);
     }
   }
+
+  public static String findProperty(
+          final MavenProject project,
+          final String key,
+          final String dflt
+  ) {
+    String projectProperty;
+
+    MavenProject curProject = project;
+    do {
+      projectProperty = curProject.getProperties().getProperty(key);
+      curProject = curProject.getParent();
+    } while (projectProperty == null && curProject != null);
+
+    return projectProperty == null ? System.getProperty(key, dflt) : projectProperty;
+  }
+
 }
