@@ -492,6 +492,10 @@ public final class UPomModel {
 
   public void injectIntoProject(final Log log, final MavenProject project) throws Exception {
     for (final Method setter : project.getClass().getMethods()) {
+      if (Modifier.isAbstract(setter.getModifiers()) || Modifier.isStatic(setter.getModifiers())) {
+        continue;
+      }
+
       final String methodName = setter.getName();
       final Class<?>[] setterParams = setter.getParameterTypes();
       if (setterParams.length == 1 && methodName.startsWith("set")) {
