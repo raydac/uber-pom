@@ -1,6 +1,6 @@
 [![License Apache 2.0](https://img.shields.io/badge/license-Apache%20License%202.0-green.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 [![Java 6.0+](https://img.shields.io/badge/java-6.0%2b-green.svg)](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
-[![Maven central](https://maven-badges.herokuapp.com/maven-central/com.igormaznitsa/uber-pom/badge.svg)](http://search.maven.org/#artifactdetails|com.igormaznitsa|uber-pom|1.0.2|jar)
+[![Maven central](https://maven-badges.herokuapp.com/maven-central/com.igormaznitsa/uber-pom/badge.svg)](http://search.maven.org/#artifactdetails|com.igormaznitsa|uber-pom|1.0.3|jar)
 [![Maven 3.0.3+](https://img.shields.io/badge/maven-3.0.3%2b-green.svg)](https://maven.apache.org/)
 [![PayPal donation](https://img.shields.io/badge/donation-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=AHWJHJFBAWGL2)
 [![Yandex.Money donation](https://img.shields.io/badge/donation-Я.деньги-yellow.svg)](https://money.yandex.ru/embed/small.xml?account=41001158080699&quickpay=small&yamoney-payment-type=on&button-text=01&button-size=l&button-color=orange&targets=%D0%9F%D0%BE%D0%B6%D0%B5%D1%80%D1%82%D0%B2%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5+%D0%BD%D0%B0+%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B+%D1%81+%D0%BE%D1%82%D0%BA%D1%80%D1%8B%D1%82%D1%8B%D0%BC+%D0%B8%D1%81%D1%85%D0%BE%D0%B4%D0%BD%D1%8B%D0%BC+%D0%BA%D0%BE%D0%B4%D0%BE%D0%BC&default-sum=100&successURL=)
@@ -9,8 +9,8 @@
 Sometime I develop and publish maven plugins in maven central. The Most comfortable way to organize maven plugin testing is to make a pom module hierarchy because maven keeps module build in defined order, also it allows to share common options between modules. But in the case there is some issue, all child modules have link to their parent and the parent must be published also together with children. So I developed the uber-pom plugin to make some around way.
 
 # Changelog
-__1.0.3 (31-jul-2019)
- - refactoring
+__1.0.3 (31-jul-2019)__
+ - refactoring  
 
 __1.0.2 (04-apr-2019)__
  - added `removeDependencies` with wildcard support
@@ -38,7 +38,7 @@ Just add the plugin into pom.xml of the project which needs uber-pom
       <plugin>
         <groupId>com.igormaznitsa</groupId>
         <artifactId>uber-pom</artifactId>
-        <version>1.0.2</version>
+        <version>1.0.3</version>
         <configuration>
           <remove>
             <section>parent</section>
