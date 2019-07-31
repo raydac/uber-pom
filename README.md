@@ -9,6 +9,9 @@
 Sometime I develop and publish maven plugins in maven central. The Most comfortable way to organize maven plugin testing is to make a pom module hierarchy because maven keeps module build in defined order, also it allows to share common options between modules. But in the case there is some issue, all child modules have link to their parent and the parent must be published also together with children. So I developed the uber-pom plugin to make some around way.
 
 # Changelog
+__1.0.3 (31-jul-2019)
+ - refactoring
+
 __1.0.2 (04-apr-2019)__
  - added `removeDependencies` with wildcard support
 

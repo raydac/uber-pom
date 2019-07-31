@@ -16,8 +16,8 @@
 package com.igormaznitsa.upom;
 
 import java.util.regex.Pattern;
-import jdk.nashorn.internal.objects.annotations.Property;
 import org.apache.maven.model.Dependency;
+import org.apache.maven.plugins.annotations.Parameter;
 
 /**
  * Dependency pattern.
@@ -29,49 +29,49 @@ public class DependencyPattern {
   /**
    * Group ID, allowed wildcard pattern.
    */
-  @Property(name = "groupId")
+  @Parameter(name = "groupId")
   private String groupId = null;
 
   /**
    * Artifact ID, allowed wildcard pattern.
    */
-  @Property(name = "artifactId")
+  @Parameter(name = "artifactId")
   private String artifactId = null;
 
   /**
    * Version, allowed wildcard pattern.
    */
-  @Property(name = "version")
+  @Parameter(name = "version")
   private String version = null;
 
   /**
    * Scope, allowed wildcard pattern.
    */
-  @Property(name = "scope")
+  @Parameter(name = "scope")
   private String scope = null;
 
   /**
    * Optional flag, allowed wildcard pattern.
    */
-  @Property(name = "optional")
+  @Parameter(name = "optional")
   private String optional = null;
 
   /**
    * System path, allowed wildcard pattern.
    */
-  @Property(name = "systemPath")
+  @Parameter(name = "systemPath")
   private String systemPath = null;
 
   /**
    * Type, allowed wildcard pattern.
    */
-  @Property(name = "type")
+  @Parameter(name = "type")
   private String type = null;
 
   /**
    * Classifier, allowed wildcard pattern.
    */
-  @Property(name = "classifier")
+  @Parameter(name = "classifier")
   private String classifier = null;
 
   private Pattern groupIdPattern;
@@ -159,7 +159,7 @@ public class DependencyPattern {
 
     if (this.groupId != null) {
       totalCounter++;
-      if (dependency.getGroupId()!=null && this.groupIdPattern.matcher(dependency.getGroupId()).matches()) {
+      if (dependency.getGroupId() != null && this.groupIdPattern.matcher(dependency.getGroupId()).matches()) {
         counter++;
       }
     }
@@ -171,37 +171,37 @@ public class DependencyPattern {
     }
     if (this.version != null) {
       totalCounter++;
-      if (dependency.getVersion()!=null && this.versionPattern.matcher(dependency.getVersion()).matches()) {
+      if (dependency.getVersion() != null && this.versionPattern.matcher(dependency.getVersion()).matches()) {
         counter++;
       }
     }
     if (this.classifier != null) {
       totalCounter++;
-      if (dependency.getClassifier()!=null && this.classifierPattern.matcher(dependency.getClassifier()).matches()) {
+      if (dependency.getClassifier() != null && this.classifierPattern.matcher(dependency.getClassifier()).matches()) {
         counter++;
       }
     }
     if (this.type != null) {
       totalCounter++;
-      if (dependency.getType()!=null && this.typePattern.matcher(dependency.getType()).matches()) {
+      if (dependency.getType() != null && this.typePattern.matcher(dependency.getType()).matches()) {
         counter++;
       }
     }
     if (this.optional != null) {
       totalCounter++;
-      if (dependency.getOptional()!=null && this.optionalPattern.matcher(dependency.getOptional()).matches()) {
+      if (dependency.getOptional() != null && this.optionalPattern.matcher(dependency.getOptional()).matches()) {
         counter++;
       }
     }
     if (this.systemPath != null) {
       totalCounter++;
-      if (dependency.getSystemPath()!=null && this.systemPathPattern.matcher(dependency.getSystemPath()).matches()) {
+      if (dependency.getSystemPath() != null && this.systemPathPattern.matcher(dependency.getSystemPath()).matches()) {
         counter++;
       }
     }
     if (this.scope != null) {
       totalCounter++;
-      if (dependency.getScope()!=null && this.scopePattern.matcher(dependency.getScope()).matches()) {
+      if (dependency.getScope() != null && this.scopePattern.matcher(dependency.getScope()).matches()) {
         counter++;
       }
     }
