@@ -401,7 +401,7 @@ public class UPomMojo extends AbstractMojo {
       
       getLog().info("Uber-pom assigned to project");
 
-      if (this.enforceInjecting) {
+      if (this.isEnforceInjecting()) {
         getLog().info("NB! Injecting generated uber-pom parameters into internal project fields!");
         main.injectIntoProject(getLog(), this.project);
       }

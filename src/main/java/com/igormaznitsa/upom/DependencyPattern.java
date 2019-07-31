@@ -26,27 +26,51 @@ import org.apache.maven.model.Dependency;
  */
 public class DependencyPattern {
 
+  /**
+   * Group ID, allowed wildcard pattern.
+   */
   @Property(name = "groupId")
   private String groupId = null;
 
+  /**
+   * Artifact ID, allowed wildcard pattern.
+   */
   @Property(name = "artifactId")
   private String artifactId = null;
 
+  /**
+   * Version, allowed wildcard pattern.
+   */
   @Property(name = "version")
   private String version = null;
 
+  /**
+   * Scope, allowed wildcard pattern.
+   */
   @Property(name = "scope")
   private String scope = null;
 
+  /**
+   * Optional flag, allowed wildcard pattern.
+   */
   @Property(name = "optional")
   private String optional = null;
 
+  /**
+   * System path, allowed wildcard pattern.
+   */
   @Property(name = "systemPath")
   private String systemPath = null;
 
+  /**
+   * Type, allowed wildcard pattern.
+   */
   @Property(name = "type")
   private String type = null;
 
+  /**
+   * Classifier, allowed wildcard pattern.
+   */
   @Property(name = "classifier")
   private String classifier = null;
 

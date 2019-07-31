@@ -503,7 +503,9 @@ public final class UPomModel {
         Method getter = null;
         for (final Method g : this.model.getClass().getMethods()) {
           final Class<?>[] getterParams = g.getParameterTypes();
-          if (getterParams.length == 0 && g.getName().equalsIgnoreCase("get" + paramName)) {
+          if (getterParams.length == 0
+                  && (g.getName().equalsIgnoreCase("get" + paramName)
+                  || g.getName().equalsIgnoreCase("is" + paramName))) {
             getter = g;
             break;
           }
