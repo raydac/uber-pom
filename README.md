@@ -6,7 +6,7 @@
 [![YooMoney donation](https://img.shields.io/badge/donation-Yoo.money-blue.svg)](https://yoomoney.ru/to/41001158080699)
 
 # Introduction
-Sometime I develop and publish maven plugins in maven central. The Most comfortable way to organize maven plugin testing is to make a pom module hierarchy because maven keeps module build in defined order, also it allows to share common options between modules. But in the case there is some issue, all child modules have link to their parent and the parent must be published also together with children. So I developed the uber-pom plugin to make some around way.
+I have maven plugins under development and some of them are published in maven central. Usually each plugin is developed in bounds of some maven project tree wich more or less complex structure but such structure not needed for artifact publishing. To get plain version of pom.xml with only needed fields, I have developed the plug-in and it works well for my purposes. I have published it in the maven central and hope it will be useful for someone else.
 
 # Changelog
 __1.0.3 (31-jul-2019)__
