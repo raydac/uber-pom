@@ -2,8 +2,8 @@
 [![Java 6.0+](https://img.shields.io/badge/java-6.0%2b-green.svg)](http://www.oracle.com/technetwork/java/javase/downloads/index.html)
 [![Maven central](https://maven-badges.herokuapp.com/maven-central/com.igormaznitsa/uber-pom/badge.svg)](http://search.maven.org/#artifactdetails|com.igormaznitsa|uber-pom|1.0.3|jar)
 [![Maven 3.0.3+](https://img.shields.io/badge/maven-3.0.3%2b-green.svg)](https://maven.apache.org/)
-[![PayPal donation](https://img.shields.io/badge/donation-PayPal-red.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=AHWJHJFBAWGL2)
-[![Yandex.Money donation](https://img.shields.io/badge/donation-Я.деньги-yellow.svg)](https://money.yandex.ru/embed/small.xml?account=41001158080699&quickpay=small&yamoney-payment-type=on&button-text=01&button-size=l&button-color=orange&targets=%D0%9F%D0%BE%D0%B6%D0%B5%D1%80%D1%82%D0%B2%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5+%D0%BD%D0%B0+%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82%D1%8B+%D1%81+%D0%BE%D1%82%D0%BA%D1%80%D1%8B%D1%82%D1%8B%D0%BC+%D0%B8%D1%81%D1%85%D0%BE%D0%B4%D0%BD%D1%8B%D0%BC+%D0%BA%D0%BE%D0%B4%D0%BE%D0%BC&default-sum=100&successURL=)
+[![PayPal donation](https://img.shields.io/badge/donation-PayPal-cyan.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=AHWJHJFBAWGL2)
+[![YooMoney donation](https://img.shields.io/badge/donation-Yoo.money-blue.svg)](https://yoomoney.ru/to/41001158080699)
 
 # Introduction
 Sometime I develop and publish maven plugins in maven central. The Most comfortable way to organize maven plugin testing is to make a pom module hierarchy because maven keeps module build in defined order, also it allows to share common options between modules. But in the case there is some issue, all child modules have link to their parent and the parent must be published also together with children. So I developed the uber-pom plugin to make some around way.
@@ -23,10 +23,10 @@ __1.0__
  - Initial version
 
 # How it works?
-The Plugin just merging all pom.xml in project module hierarchy (or only defined depth of the hierarchy) and saves the generated uber-pom into defined place, then it saves link to the file into the current maven project model. It works on the INITIALIZE phase. So the result packed artifact will have the uber-pom packed into the result archive.
+The plugin just merging all pom.xml in project module tree hierarchy (or only required depth of the hierarchy tree) and saves the created uber-pom into required place. The new generated pom file path provided into the current active maven project model. It during INITIALIZE phase and the result packed artifact will have the uber-pom packed in the result artifact.
 
 # May be there is official solution?
-May be yes, I have found [pre-released maven-flatten](http://mojo.codehaus.org/flatten-maven-plugin/) which may be doing the same business but I prefer my own solutions.
+I have found [flatten-maven-plugin](http://mojo.codehaus.org/flatten-maven-plugin/), it also allows to make similar business but it works not very well in pair with maven-shade-plugin and it is critically for me.
 
 # How to use?
 ## Add the plugin in pom.xml
@@ -78,7 +78,7 @@ Just add list of paths to the sections into `<configuration><remove>` and the se
   </configuration>
 ```
 ## I want keep some sections unchanged!
-Add paths to such sections into `<configuration><keep>`
+Add paths to such sections into `<keep>` property
 ```
   <configuration>
     <keep>
@@ -87,7 +87,8 @@ Add paths to such sections into `<configuration><keep>`
     </keep>
   </configuration>
 ```
-The Sections in the result will be the same as in the original project pom.xml.
+those secttions in the result will be the same as in the original project pom.xml.
+
 ## How to change value of some pom parameters?
 Sometime it is good to change some record in the pom.xml, the plugin allows to do that
 ```
@@ -104,32 +105,32 @@ Sometime it is good to change some record in the pom.xml, the plugin allows to d
   </set>
 </configuration>
 ```
-## How to save uber-pom in another place?
-The Generated uber-pom by default will be placed in the same folder where the project pom is. You can change that through `<folder>` setting.
+## How to change default place for generated uber-pom?
+Generated uber-pom by default will be placed in the same folder where the project pom is. You can change that through `<folder>` property.
 ```
 <configuration>
   <folder>/anotherFolderToSaveUberPom</folder>
 </configuration>
 ```
-## I wanna change the result uber-pom name
-By default the uber-pom has name `uber-pom.xml` but sometime it is needed to be changed, it is possible through `<name>` setting.
+## I want to change the result uber-pom name
+By default the uber-pom named as `uber-pom.xml` but sometime should be changed, it is possible through `<name>` property.
 ```
 <configuration>
   <name>customUberPom.xml</name>
 </configuration>
 ```
 ## I can't find uber-pom after session
-By default the generated and saved uber-pom will be removed after session. If you want to keep the file then disable its deleting with flag `<deleteOnExit>`
+By default the generated uber-pom will be removed after session. If you want to keep the file then disable delete action with flag `<deleteOnExit>`
 ```
 <configuration>
   <deleteOnExit>false</deleteOnExit>
 </configuration>
 ```
 ## How to merge only restricted number of hierarchy levels?
-By default the plugin merges all hierarchy levels, but you can restrict the number through the `<depth>` parameter
+By default the plugin merges all hierarchy levels till the root, but you can restrict the number with the `<depth>` property
 ```
 <configuration>
   <depth>2</depth>
 </configuration>
 ```
-In the example, only two upper levels will be involved into merging.
+In the example, only two upper tree levels will be involved into build of merging result.
